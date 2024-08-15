@@ -18,9 +18,6 @@ jobs:
       - uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: .github/environment.yml
-          init-shell: >-
-            bash
-            powershell
           cache-environment: true
           post-cleanup: 'all'
 
