@@ -15,17 +15,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Conda
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          auto-activate-base: true
-          activate-environment: ""
+     - uses: mamba-org/setup-micromamba@v1
+       with:
+         environment-file: .github/environment.yml
+         init-shell: >-
+           bash
+           powershell
+         cache-environment: true
+         post-cleanup: 'all'
 
       - name: Install OpenMC
         shell: bash
         run: |
-          conda config --add channels conda-forge
-          conda install -c conda_forge openmc==0.15.0
+          mamba install -c conda_forge openmc==0.15.0
 
       - name: Clone OpenMC
         run: |
