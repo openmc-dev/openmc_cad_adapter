@@ -35,3 +35,7 @@ jobs:
       - name: Test examples
         run: |
           OPENMC_EXAMPLES_DIR=$HOME/openmc/examples pytest -v ./test/test_examples.py
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
