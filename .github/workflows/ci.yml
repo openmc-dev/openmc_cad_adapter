@@ -8,8 +8,14 @@ on:
   workflow_dispatch:
 
 jobs:
+
+jobs:
+
   main:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -leo pipefail {0}
 
     steps:
       - name: Checkout
@@ -21,7 +27,6 @@ jobs:
           init-shell: bash
 
       - name: Install OpenMC
-        shell: bash
         run: |
           micromamba activate test-env
           micromamba install -c conda_forge openmc==0.15.0
@@ -32,7 +37,6 @@ jobs:
 
 
       - name: Test examples
-        shell: bash
         run: |
           micromamba activate test-env
           OPENMC_EXAMPLES_DIR=$HOME/openmc/examples pytest -v ./test/test_examples.py
