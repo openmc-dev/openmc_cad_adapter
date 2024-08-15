@@ -27,7 +27,7 @@ jobs:
       - name: Install OpenMC
         shell: bash
         run: |
-          mamba install -c conda_forge openmc==0.15.0
+          micromamba install -c conda_forge openmc==0.15.0
 
       - name: Clone OpenMC
         run: |
