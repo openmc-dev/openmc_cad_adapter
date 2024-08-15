@@ -1,0 +1,43 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "openmc_cad_adapter"
+version = "0.1.0"
+description = "Tool to convert OpenMC Geometry input file to CAD"
+readme = "README.md"
+authors = [
+  { name = "Kevin Tew", email = "kevin@coreform.com" },
+  {  name = "Patrick Shriwise", email = "pshriwise@gmail.com"}
+]
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+
+dependencies = [
+  "numpy", "openmc"
+]
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/openmc-dev/openmc_cad_adapter/issues"
+Discussions = "https://openmc.discourse.org"
+"Source Code" = "https://github.com/openmc-dev/openmc_cad_adapter"
+
+[project.scripts]
+openmc_to_cad = "openmc_cad_adapter.openmc_conversion:openmc_to_cad"
