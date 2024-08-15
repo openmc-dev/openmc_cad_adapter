@@ -27,6 +27,7 @@ jobs:
       - name: Install OpenMC
         shell: bash
         run: |
+          micromamba activate test-env
           micromamba install -c conda_forge openmc==0.15.0
 
       - name: Clone OpenMC
@@ -35,7 +36,9 @@ jobs:
 
 
       - name: Test examples
+        shell: bash
         run: |
+          micromamba activate test-env
           OPENMC_EXAMPLES_DIR=$HOME/openmc/examples pytest -v ./test/test_examples.py
 
       - name: Setup tmate session
