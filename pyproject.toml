@@ -40,4 +40,4 @@ Discussions = "https://openmc.discourse.org"
 "Source Code" = "https://github.com/openmc-dev/openmc_cad_adapter"
 
 [project.scripts]
-openmc_to_cad = "openmc_cad_adapter.openmc_conversion:openmc_to_cad"
+openmc_to_cad = "openmc_cad_adapter.to_cubit_journal:openmc_to_cad"
