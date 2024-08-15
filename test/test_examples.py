@@ -1,4 +1,6 @@
 import os
+import difflib
+import filecmp
 from pathlib import Path
 
 import pytest
@@ -16,11 +18,20 @@ if 'OPENMC_EXAMPLES_DIR' not in os.environ:
 
 OPENMC_EXAMPLES_DIR = Path(os.environ['OPENMC_EXAMPLES_DIR']).resolve()
 
+
+def diff_files(a, b):
+    if not filecmp.cmp(a, b):
+        print(''.join(difflib.unified_diff(open(a, 'r').readlines(),
+                                           open(b, 'r').readlines())))
+        raise RuntimeError(f'{a} and {b} are different')
+
+
 def example_name(example):
     return '-'.join(example.split('/')[:-1])
 
+
 @pytest.mark.parametrize("example", examples, ids=example_name)
-def test_example(example):
+def test_example(example, request):
 
     openmc.reset_auto_ids()
     exec(open(OPENMC_EXAMPLES_DIR / example).read())
@@ -29,4 +40,8 @@ def test_example(example):
     model = openmc.Model.from_xml()
 
     world = [500, 500, 500]
-    to_cubit_journal(model.geometry, world=world, filename=example_name(example))
+    output = example_name(example)
+    to_cubit_journal(model.geometry, world=world, filename=output)
+
+    if not filecmp.cmp(output, request.path.parent / Path('gold') / output):
+        print(''.join(difflib.unified_diff(open(output).readlines(), open(Path('gold') / output).readlines())))

@@ -1,0 +1,71 @@
+set graphics off
+set journal off
+#CELL 1
+cylinder height 500 radius 0.39218
+#{ id1 = Id("body") }
+body { id1 } name "Cell_1"
+group "Material_1" add body { id1 } 
+#CELL 2
+cylinder height 500 radius 0.39218
+#{ id2 = Id("body") }
+brick x 500 y 500 z 500
+#{ id3 = Id("body") }
+subtract body { id2 } from body { id3 }
+cylinder height 500 radius 0.40005
+#{ id4 = Id("body") }
+#{ id5 = Id("body") }
+intersect body { id3 } { id4 }
+#{ id6 = Id("body") }
+#{id7 = ( id5 == id6 ) ? id4 : id6}
+body { id7 } name "Cell_2"
+group "Material_2" add body { id7 } 
+#CELL 3
+cylinder height 500 radius 0.40005
+#{ id8 = Id("body") }
+brick x 500 y 500 z 500
+#{ id9 = Id("body") }
+subtract body { id8 } from body { id9 }
+cylinder height 500 radius 0.4572
+#{ id10 = Id("body") }
+#{ id11 = Id("body") }
+intersect body { id9 } { id10 }
+#{ id12 = Id("body") }
+#{id13 = ( id11 == id12 ) ? id10 : id12}
+body { id13 } name "Cell_3"
+group "Material_3" add body { id13 } 
+#CELL 4
+cylinder height 500 radius 0.4572
+#{ id14 = Id("body") }
+brick x 500 y 500 z 500
+#{ id15 = Id("body") }
+subtract body { id14 } from body { id15 }
+brick x 500 y 500 z 500
+#{ id16 = Id("body") }
+section body { id16 } with xplane offset -0.62992 
+#{ id17 = Id("body") }
+intersect body { id15 } { id16 }
+#{ id18 = Id("body") }
+#{id19 = ( id17 == id18 ) ? id16 : id18}
+brick x 500 y 500 z 500
+#{ id20 = Id("body") }
+section body { id20 } with xplane offset 0.62992 reverse
+#{ id21 = Id("body") }
+intersect body { id19 } { id20 }
+#{ id22 = Id("body") }
+#{id23 = ( id21 == id22 ) ? id20 : id22}
+brick x 500 y 500 z 500
+#{ id24 = Id("body") }
+section body { id24 } with yplane offset -0.62992 
+#{ id25 = Id("body") }
+intersect body { id23 } { id24 }
+#{ id26 = Id("body") }
+#{id27 = ( id25 == id26 ) ? id24 : id26}
+brick x 500 y 500 z 500
+#{ id28 = Id("body") }
+section body { id28 } with yplane offset 0.62992 reverse
+#{ id29 = Id("body") }
+intersect body { id27 } { id28 }
+#{ id30 = Id("body") }
+#{id31 = ( id29 == id30 ) ? id28 : id30}
+body { id31 } name "Cell_4"
+group "Material_4" add body { id31 } 
