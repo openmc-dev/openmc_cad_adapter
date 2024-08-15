@@ -6,7 +6,11 @@ import sys
 from numpy.linalg import matrix_rank
 import numpy as np
 
-import openmc
+try:
+    import openmc
+except ImportError as e:
+    raise type(e)("Please install OpenMC's Python API to use the CAD conversion tool")
+
 from openmc.region import Region, Complement, Intersection, Union
 from openmc.surface import Halfspace, Quadric
 from openmc.lattice import Lattice, HexLattice
