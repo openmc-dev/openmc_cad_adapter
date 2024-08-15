@@ -172,7 +172,11 @@ def vector_to_euler_xyz(v):
     oe = 180 / math.pi
     return phi * oe, theta * oe, psi * oe
 
-def to_cubit_journal(geom, seen=set(), world=[60,60,60], cells=None, filename=None, to_cubit=False ):
+def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to_cubit=False):
+
+    if world is None:
+        raise RuntimeError("Model extents must be provided")
+
     w = world
     cid = 1
     def lastid():
