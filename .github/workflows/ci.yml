@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Conda
+        uses: conda-incubator/setup-miniconda@v3
+          with:
+            auto-activate-base: true
+            activate-environment: ""
+
+      - name: Install OpenMC
+        shell: bash
+        run: |
+          conda config --add channels conda-forge
+          conda install -c conda_forge openmc==0.15.0
+
+      - name: Clone OpenMC
+        run: |
+          git clone https://github.com/openmc-dev/openmc --branch v0.15.0 $HOME
+
+
+      - name: Test examples
+        run: |
+          OPENMC_EXAMPLES_DIR=$HOME/openmc/examples pytest -v ./test/test_examples.py
