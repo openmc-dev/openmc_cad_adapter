@@ -17,9 +17,9 @@ jobs:
 
       - name: Conda
         uses: conda-incubator/setup-miniconda@v3
-          with:
-            auto-activate-base: true
-            activate-environment: ""
+        with:
+          auto-activate-base: true
+          activate-environment: ""
 
       - name: Install OpenMC
         shell: bash
