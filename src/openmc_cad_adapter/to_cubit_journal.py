@@ -973,9 +973,9 @@ def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to
         if cell.fill_type == "material":
             cmds.append( f'group \"Material_{cell.fill.id}\" add body {{ { vol_or_body[0] } }} ' )
         after = len( cmds )
-        with open( filename + f"_cell{cell.id}", "w" ) as f:
-            for x in cmds[before:after]:
-                f.write( x + "\n" )
+        # with open( filename + f"_cell{cell.id}", "w" ) as f:
+        #     for x in cmds[before:after]:
+        #         f.write( x + "\n" )
 
     for cell in geom.root_universe._cells.values():
         if cells:
