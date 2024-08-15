@@ -23,15 +23,9 @@ jobs:
           environment-file: .github/environment.yml
           init-shell: bash
 
-      - name: Install OpenMC
-        run: |
-          micromamba activate test-env
-          micromamba install -c conda_forge openmc==0.15.0
-
       - name: Clone OpenMC
         run: |
           git clone https://github.com/openmc-dev/openmc --branch v0.15.0 $HOME
-
 
       - name: Test examples
         run: |
