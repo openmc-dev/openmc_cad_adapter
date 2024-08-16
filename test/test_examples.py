@@ -44,4 +44,4 @@ def test_example(example, request):
     to_cubit_journal(model.geometry, world=world, filename=output)
 
     if not filecmp.cmp(output, request.path.parent / Path('gold') / output):
-        print(''.join(difflib.unified_diff(open(output).readlines(), open(Path('gold') / output).readlines())))
+        print(''.join(difflib.unified_diff(open(output).readlines(), request.path.parent / open(Path('gold') / output).readlines())))
