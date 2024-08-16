@@ -215,34 +215,34 @@ rotate body { id53 } about z angle 30
 subtract body { id52 } from body { id53 }
 body { id53 } name "cell 6"
 move body { id53 } midpoint location 0.0 0.0 0.0
-cylinder height 2.0 radius 0.4
+create prism height 2.0 sides 6 radius 0.5
 #{ id54 = Id("body") }
-body { id54 } name "cell 5"
+rotate body { id54 } about z angle 30
+body { id54 } name "cell 4"
 move body { id54 } midpoint location 0.0 1.7320508075688772 2.0
 cylinder height 2.0 radius 0.4
 #{ id55 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
-#{ id56 = Id("body") }
-rotate body { id56 } about z angle 30
-subtract body { id55 } from body { id56 }
-body { id56 } name "cell 6"
-move body { id56 } midpoint location 0.0 1.7320508075688772 2.0
+body { id55 } name "cell 2"
+move body { id55 } midpoint location 0.75 1.299038105676658 2.0
 cylinder height 2.0 radius 0.4
+#{ id56 = Id("body") }
+create prism height 2.0 sides 6 radius 0.5
 #{ id57 = Id("body") }
-body { id57 } name "cell 2"
+rotate body { id57 } about z angle 30
+subtract body { id56 } from body { id57 }
+body { id57 } name "cell 3"
 move body { id57 } midpoint location 0.75 1.299038105676658 2.0
 cylinder height 2.0 radius 0.4
 #{ id58 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
+body { id58 } name "cell 2"
+move body { id58 } midpoint location 1.5 0.8660254037844386 2.0
+cylinder height 2.0 radius 0.4
 #{ id59 = Id("body") }
-rotate body { id59 } about z angle 30
-subtract body { id58 } from body { id59 }
-body { id59 } name "cell 3"
-move body { id59 } midpoint location 0.75 1.299038105676658 2.0
 create prism height 2.0 sides 6 radius 0.5
 #{ id60 = Id("body") }
 rotate body { id60 } about z angle 30
-body { id60 } name "cell 4"
+subtract body { id59 } from body { id60 }
+body { id60 } name "cell 3"
 move body { id60 } midpoint location 1.5 0.8660254037844386 2.0
 cylinder height 2.0 radius 0.4
 #{ id61 = Id("body") }
@@ -340,22 +340,22 @@ rotate body { id84 } about z angle 30
 subtract body { id83 } from body { id84 }
 body { id84 } name "cell 3"
 move body { id84 } midpoint location -1.5 0.8660254037844386 2.0
-create prism height 2.0 sides 6 radius 0.5
+cylinder height 2.0 radius 0.4
 #{ id85 = Id("body") }
-rotate body { id85 } about z angle 30
-body { id85 } name "cell 4"
+body { id85 } name "cell 2"
 move body { id85 } midpoint location -0.75 1.299038105676658 2.0
 cylinder height 2.0 radius 0.4
 #{ id86 = Id("body") }
-body { id86 } name "cell 2"
-move body { id86 } midpoint location 5.302876193624534e-17 0.8660254037844386 2.0
-cylinder height 2.0 radius 0.4
+create prism height 2.0 sides 6 radius 0.5
 #{ id87 = Id("body") }
+rotate body { id87 } about z angle 30
+subtract body { id86 } from body { id87 }
+body { id87 } name "cell 3"
+move body { id87 } midpoint location -0.75 1.299038105676658 2.0
 create prism height 2.0 sides 6 radius 0.5
 #{ id88 = Id("body") }
 rotate body { id88 } about z angle 30
-subtract body { id87 } from body { id88 }
-body { id88 } name "cell 3"
+body { id88 } name "cell 4"
 move body { id88 } midpoint location 5.302876193624534e-17 0.8660254037844386 2.0
 cylinder height 2.0 radius 0.4
 #{ id89 = Id("body") }
@@ -429,22 +429,22 @@ rotate body { id106 } about z angle 30
 subtract body { id105 } from body { id106 }
 body { id106 } name "cell 3"
 move body { id106 } midpoint location 0.0 0.0 2.0
-cylinder height 2.0 radius 0.4
+create prism height 2.0 sides 6 radius 0.5
 #{ id107 = Id("body") }
-body { id107 } name "cell 2"
+rotate body { id107 } about z angle 30
+body { id107 } name "cell 4"
 move body { id107 } midpoint location 0.0 1.7320508075688772 4.0
 cylinder height 2.0 radius 0.4
 #{ id108 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
+body { id108 } name "cell 5"
+move body { id108 } midpoint location 0.75 1.299038105676658 4.0
+cylinder height 2.0 radius 0.4
 #{ id109 = Id("body") }
-rotate body { id109 } about z angle 30
-subtract body { id108 } from body { id109 }
-body { id109 } name "cell 3"
-move body { id109 } midpoint location 0.0 1.7320508075688772 4.0
 create prism height 2.0 sides 6 radius 0.5
 #{ id110 = Id("body") }
 rotate body { id110 } about z angle 30
-body { id110 } name "cell 4"
+subtract body { id109 } from body { id110 }
+body { id110 } name "cell 6"
 move body { id110 } midpoint location 0.75 1.299038105676658 4.0
 cylinder height 2.0 radius 0.4
 #{ id111 = Id("body") }
@@ -556,7 +556,7 @@ body { id137 } name "cell 6"
 move body { id137 } midpoint location -1.5 0.8660254037844386 4.0
 cylinder height 2.0 radius 0.4
 #{ id138 = Id("body") }
-body { id138 } name "cell 2"
+body { id138 } name "cell 5"
 move body { id138 } midpoint location -0.75 1.299038105676658 4.0
 cylinder height 2.0 radius 0.4
 #{ id139 = Id("body") }
@@ -564,72 +564,72 @@ create prism height 2.0 sides 6 radius 0.5
 #{ id140 = Id("body") }
 rotate body { id140 } about z angle 30
 subtract body { id139 } from body { id140 }
-body { id140 } name "cell 3"
+body { id140 } name "cell 6"
 move body { id140 } midpoint location -0.75 1.299038105676658 4.0
-cylinder height 2.0 radius 0.4
+create prism height 2.0 sides 6 radius 0.5
 #{ id141 = Id("body") }
-body { id141 } name "cell 5"
+rotate body { id141 } about z angle 30
+body { id141 } name "cell 4"
 move body { id141 } midpoint location 5.302876193624534e-17 0.8660254037844386 4.0
 cylinder height 2.0 radius 0.4
 #{ id142 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
-#{ id143 = Id("body") }
-rotate body { id143 } about z angle 30
-subtract body { id142 } from body { id143 }
-body { id143 } name "cell 6"
-move body { id143 } midpoint location 5.302876193624534e-17 0.8660254037844386 4.0
+body { id142 } name "cell 5"
+move body { id142 } midpoint location 0.7499999999999999 0.4330127018922193 4.0
 cylinder height 2.0 radius 0.4
+#{ id143 = Id("body") }
+create prism height 2.0 sides 6 radius 0.5
 #{ id144 = Id("body") }
-body { id144 } name "cell 5"
+rotate body { id144 } about z angle 30
+subtract body { id143 } from body { id144 }
+body { id144 } name "cell 6"
 move body { id144 } midpoint location 0.7499999999999999 0.4330127018922193 4.0
 cylinder height 2.0 radius 0.4
 #{ id145 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
-#{ id146 = Id("body") }
-rotate body { id146 } about z angle 30
-subtract body { id145 } from body { id146 }
-body { id146 } name "cell 6"
-move body { id146 } midpoint location 0.7499999999999999 0.4330127018922193 4.0
+body { id145 } name "cell 5"
+move body { id145 } midpoint location 0.75 -0.43301270189221913 4.0
 cylinder height 2.0 radius 0.4
+#{ id146 = Id("body") }
+create prism height 2.0 sides 6 radius 0.5
 #{ id147 = Id("body") }
-body { id147 } name "cell 5"
+rotate body { id147 } about z angle 30
+subtract body { id146 } from body { id147 }
+body { id147 } name "cell 6"
 move body { id147 } midpoint location 0.75 -0.43301270189221913 4.0
 cylinder height 2.0 radius 0.4
 #{ id148 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
-#{ id149 = Id("body") }
-rotate body { id149 } about z angle 30
-subtract body { id148 } from body { id149 }
-body { id149 } name "cell 6"
-move body { id149 } midpoint location 0.75 -0.43301270189221913 4.0
+body { id148 } name "cell 5"
+move body { id148 } midpoint location 5.302876193624534e-17 -0.8660254037844386 4.0
 cylinder height 2.0 radius 0.4
+#{ id149 = Id("body") }
+create prism height 2.0 sides 6 radius 0.5
 #{ id150 = Id("body") }
-body { id150 } name "cell 5"
+rotate body { id150 } about z angle 30
+subtract body { id149 } from body { id150 }
+body { id150 } name "cell 6"
 move body { id150 } midpoint location 5.302876193624534e-17 -0.8660254037844386 4.0
 cylinder height 2.0 radius 0.4
 #{ id151 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
-#{ id152 = Id("body") }
-rotate body { id152 } about z angle 30
-subtract body { id151 } from body { id152 }
-body { id152 } name "cell 6"
-move body { id152 } midpoint location 5.302876193624534e-17 -0.8660254037844386 4.0
+body { id151 } name "cell 5"
+move body { id151 } midpoint location -0.7499999999999998 -0.4330127018922196 4.0
 cylinder height 2.0 radius 0.4
+#{ id152 = Id("body") }
+create prism height 2.0 sides 6 radius 0.5
 #{ id153 = Id("body") }
-body { id153 } name "cell 5"
+rotate body { id153 } about z angle 30
+subtract body { id152 } from body { id153 }
+body { id153 } name "cell 6"
 move body { id153 } midpoint location -0.7499999999999998 -0.4330127018922196 4.0
 cylinder height 2.0 radius 0.4
 #{ id154 = Id("body") }
-create prism height 2.0 sides 6 radius 0.5
+body { id154 } name "cell 5"
+move body { id154 } midpoint location -0.7499999999999999 0.4330127018922194 4.0
+cylinder height 2.0 radius 0.4
 #{ id155 = Id("body") }
-rotate body { id155 } about z angle 30
-subtract body { id154 } from body { id155 }
-body { id155 } name "cell 6"
-move body { id155 } midpoint location -0.7499999999999998 -0.4330127018922196 4.0
 create prism height 2.0 sides 6 radius 0.5
 #{ id156 = Id("body") }
 rotate body { id156 } about z angle 30
-body { id156 } name "cell 4"
+subtract body { id155 } from body { id156 }
+body { id156 } name "cell 6"
 move body { id156 } midpoint location -0.7499999999999999 0.4330127018922194 4.0
 cylinder height 2.0 radius 0.4
 #{ id157 = Id("body") }
