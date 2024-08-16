@@ -31,7 +31,7 @@ def example_name(example):
 
 
 @pytest.mark.parametrize("example", examples, ids=example_name)
-def test_example(example, request):
+def test_examples(example, request):
 
     openmc.reset_auto_ids()
     exec(open(OPENMC_EXAMPLES_DIR / example).read())
@@ -43,5 +43,5 @@ def test_example(example, request):
     output = example_name(example)
     to_cubit_journal(model.geometry, world=world, filename=output)
 
-    if not filecmp.cmp(output, request.path.parent / Path('gold') / output):
-        print(''.join(difflib.unified_diff(open(output).readlines(), request.path.parent / open(Path('gold') / output).readlines())))
+    gold_file = request.path.parent / Path('gold') / Path(output)
+    diff_files(output, gold_file)
