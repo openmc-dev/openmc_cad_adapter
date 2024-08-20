@@ -416,7 +416,7 @@ def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to
                 elif surface._type == "sphere":
                     cmds.append( f"sphere redius {surface.coefficients['r']}")
                     ids = emit_get_last_id(ent_type)
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['zy0'])
+                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
                     pass
                 elif surface._type == "cone":
                     raise NotImplementedError("cone not implemented")
@@ -457,7 +457,7 @@ def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to
                     move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
                     return ids
                 elif surface._type == "x-torus":
-                    cmds.append( f"torus major radius {surface.coefficients['r']} minor radius {surface.coefficients['r']}")
+                    cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
                     ids = emit_get_last_id( ent_type )
                     cmds.append( f"rotate body {{ {ids} }} about y angle 90")
                     if node.side != '-':
@@ -469,7 +469,7 @@ def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to
                     move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
                     return ids
                 elif surface._type == "y-torus":
-                    cmds.append( f"torus major radius {surface.coefficients['r']} minor radius {surface.coefficients['r']}")
+                    cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
                     ids = emit_get_last_id( ent_type )
                     cmds.append( f"rotate body {{ {ids} }} about x angle 90")
                     if node.side != '-':
@@ -480,7 +480,7 @@ def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to
                         return wid
                     return ids
                 elif surface._type == "z-torus":
-                    cmds.append( f"torus major radius {surface.coefficients['r']} minor radius {surface.coefficients['r']}")
+                    cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
                     ids = emit_get_last_id( ent_type )
                     if node.side != '-':
                         cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
@@ -939,7 +939,7 @@ def openmc_to_cad():
                                'Please provide a world size argument to proceed')
         # to ensure that the box
         box_max = np.max(np.abs(bbox[0], bbox[1]).T)
-        world_size = 2*box_maxOA
+        world_size = (2 * box_max, 2 * box_max, 2 * box_max)
     else:
         world_size = args.world_size
 
