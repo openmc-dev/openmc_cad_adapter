@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import math
+from pathlib import Path
 import sys
 
 
@@ -173,10 +174,24 @@ def vector_to_euler_xyz(v):
     return phi * oe, theta * oe, psi * oe
 
 
-def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to_cubit=False):
+def to_cubit_journal(geometry : openmc.Geometry, seen=set(), world=None, cells=None, filename=None, to_cubit=False):
+
+    if isinstance(geometry, openmc.Model):
+        geometry = geometry.geometry
+
+    geom = geometry
 
     if world is None:
-        raise RuntimeError("Model extents must be provided")
+        bbox = geometry.bounding_box
+        if not all(np.isfinite(bbox[0])) or not all(np.isfinite(bbox[1])):
+            raise RuntimeError('Model bounds were not provided and the bounding box determined by OpenMC is not finite.'
+                               'Please provide a world size argument to proceed')
+        # to ensure that the box
+        box_max = np.max(np.abs(bbox[0], bbox[1]).T)
+        world_size = (2 * box_max, 2 * box_max, 2 * box_max)
+
+    if world is None:
+        raise RuntimeError("Model extents could not be determined automatically and must be provided manually")
 
     w = world
     cid = 1
@@ -925,22 +940,16 @@ def to_cubit_journal(geom, seen=set(), world=None, cells=None, filename=None, to
 def openmc_to_cad():
     """Command-line interface for OpenMC to CAD model conversion"""
     parser = ArgumentParser()
-    parser.add_argument('input', help='Path to a OpenMC model.xml file')
+    parser.add_argument('input', help='Path to a OpenMC model.xml file or path to a directory containing OpenMC XMLs')
     parser.add_argument('-o', '--output', help='Output filename', default='openmc.jou')
     parser.add_argument('-w', '--world-size', help='Maximum width of the geometry in X, Y, and Z', nargs=3, type=int)
     args = parser.parse_args()
 
-    model = openmc.Model.from_model_xml(args.input)
+    model_path = Path(args.input)
 
-    if args.world_size is None:
-        bbox = model.geometry.bounding_box
-        if not all(np.isfinite(bbox[0])) or not all(np.isfinite(bbox[1])):
-            raise RuntimeError('Model bounds were not provided and the bounding box determined by OpenMC is not finite.'
-                               'Please provide a world size argument to proceed')
-        # to ensure that the box
-        box_max = np.max(np.abs(bbox[0], bbox[1]).T)
-        world_size = (2 * box_max, 2 * box_max, 2 * box_max)
+    if model_path.is_dir():
+        model = openmc.Model.from_xml()
     else:
-        world_size = args.world_size
+        model = openmc.Model.from_model_xml()
 
-    to_cubit_journal(model.geometry, world=world_size, filename=args.output)
+    to_cubit_journal(model.geometry, world=args.world_size, filename=args.output)

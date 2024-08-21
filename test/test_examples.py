@@ -3,6 +3,8 @@ import difflib
 import filecmp
 from pathlib import Path
 
+import subprocess
+
 import pytest
 
 from openmc_cad_adapter import to_cubit_journal
@@ -42,6 +44,25 @@ def test_examples(example, request):
     world = [500, 500, 500]
     output = example_name(example)
     to_cubit_journal(model.geometry, world=world, filename=output)
+
+    gold_file = request.path.parent / Path('gold') / Path(output)
+    diff_files(output, gold_file)
+
+
+@pytest.mark.parametrize("example", examples, ids=example_name)
+def test_examples_cli(example, request):
+
+    openmc.reset_auto_ids()
+    example_path = OPENMC_EXAMPLES_DIR / example
+    exec(open(example_path).read())
+
+    world = [500, 500, 500]
+    output = example_name(example)
+    cmd = ['openmc_to_cad', example_path.parent, '-o', output, '--world'] + [str(w) for w in world]
+    pipe = subprocess.Popen(cmd)
+    pipe.wait()
+    if pipe.returncode != 0:
+        raise RuntimeError(f'Command {" ".join(cmd)} failed')
 
     gold_file = request.path.parent / Path('gold') / Path(output)
     diff_files(output, gold_file)
