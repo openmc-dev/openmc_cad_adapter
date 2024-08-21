@@ -948,8 +948,8 @@ def openmc_to_cad():
     model_path = Path(args.input)
 
     if model_path.is_dir():
-        model = openmc.Model.from_xml()
+        model = openmc.Model.from_xml(model_path)
     else:
-        model = openmc.Model.from_model_xml()
+        model = openmc.Model.from_model_xml(model_path)
 
     to_cubit_journal(model.geometry, world=args.world_size, filename=args.output)
