@@ -175,10 +175,19 @@ def vector_to_euler_xyz(v):
     return phi * oe, theta * oe, psi * oe
 
 
-def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, cells: Iterable[int] = None, filename: str = None, to_cubit: bool = False, seen: set = set()):
+def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, cells: Iterable[int] = None, filename: str = "openmc.jou", to_cubit: bool = False, seen: set = set()):
+
+    if not filename.endswith('.jou'):
+        filename += '.jou'
 
     if isinstance(geometry, openmc.Model):
         geometry = geometry.geometry
+
+    if to_cubit:
+        try:
+            import cubit
+        except ImportError:
+            raise ImportError("Cubit Python API not found. Please install Cubit to use this feature.")
 
     geom = geometry
 
@@ -842,7 +851,6 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, 
                         ii = ii + 1
                 #2d hex lattice
                 else:
-                    #print( node )
                     center = [ node.center[0], node.center[1] ]
                     i = 0
                     for us in node.universes:
@@ -901,10 +909,8 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, 
                 cmds.append( f"body {{ {r[0]} }} name \"{node.name}\"" )
             else:
                 cmds.append( f"body {{ {r[0]} }} name \"Cell_{node.id}\"" )
-        #print( r )
         return r
 
-    #print( geom.root_universe )
     def do_cell(cell, cell_ids: Iterable[int] = None):
         before = len( cmds )
         cmds.append( f"#CELL {cell.id}" )
@@ -929,13 +935,12 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, 
         with open( filename, "w" ) as f:
             for x in cmds:
                 f.write( x + "\n" )
-            #f.write( "save sub5 \"geometry.cub\" overwrite" )
 
     if to_cubit:
-        if cubit:
-            cubit.cmd( "reset" )
-            for x in cmds:
-                cubit.cmd( x )
+        cubit.cmd( "reset" )
+        for x in cmds:
+            cubit.cmd( x )
+            cubit.cmd(f"save as {filename[:-4]}.cub overwrite")
 
 
 def openmc_to_cad():
@@ -945,6 +950,8 @@ def openmc_to_cad():
     parser.add_argument('-o', '--output', help='Output filename', default='openmc.jou')
     parser.add_argument('-w', '--world-size', help='Maximum width of the geometry in X, Y, and Z', nargs=3, type=int)
     parser.add_argument('-c', '--cells', help='List of cell IDs to convert', nargs='+', type=int)
+    parser.add_argument('--to-cubit', help='Run  Cubit', default=False, action='store_true')
+    parser.add_argument('--cubit-path', help='Path to Cubit bin directory', default=None, type=str)
     args = parser.parse_args()
 
     model_path = Path(args.input)
@@ -956,4 +963,7 @@ def openmc_to_cad():
     else:
         model = openmc.Model.from_model_xml(model_path)
 
-    to_cubit_journal(model.geometry, world=args.world_size, filename=args.output, cells=args.cells)
+    if args.cubit_path is not None:
+        sys.path.append(args.cubit_path)
+
+    to_cubit_journal(model.geometry, world=args.world_size, filename=args.output, cells=args.cells, to_cubit=args.to_cubit)
