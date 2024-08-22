@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
+from collections.abc import Iterable
 import math
+from numbers import Real
 from pathlib import Path
 import sys
-
 
 from numpy.linalg import matrix_rank
 import numpy as np
@@ -174,7 +175,7 @@ def vector_to_euler_xyz(v):
     return phi * oe, theta * oe, psi * oe
 
 
-def to_cubit_journal(geometry : openmc.Geometry, seen=set(), world=None, cells=None, filename=None, to_cubit=False):
+def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, cells: Iterable[int] = None, filename: str = None, to_cubit: bool = False, seen: set = set()):
 
     if isinstance(geometry, openmc.Model):
         geometry = geometry.geometry
@@ -904,27 +905,27 @@ def to_cubit_journal(geometry : openmc.Geometry, seen=set(), world=None, cells=N
         return r
 
     #print( geom.root_universe )
-    def do_cell( cell ):
+    def do_cell(cell, cell_ids: Iterable[int] = None):
         before = len( cmds )
         cmds.append( f"#CELL {cell.id}" )
         vol_or_body = process_node_or_fill( cell, w )
         if cell.fill_type == "material":
             cmds.append( f'group \"Material_{cell.fill.id}\" add body {{ { vol_or_body[0] } }} ' )
         after = len( cmds )
-        # with open( filename + f"_cell{cell.id}", "w" ) as f:
-        #     for x in cmds[before:after]:
-        #         f.write( x + "\n" )
+
+        if cell_ids is not None and cell.id in cell_ids:
+            with open( filename + f"_cell{cell.id}", "w" ) as f:
+                for x in cmds[before:after]:
+                    f.write( x + "\n" )
 
     for cell in geom.root_universe._cells.values():
         if cells:
             if cell.id in cells:
-                do_cell( cell )
+                do_cell( cell, cell_ids=cells)
         else:
             do_cell( cell )
 
     if filename:
-#        cmds.append( f"save as \"OPENMC_TO_CUBIT.cub\" overwrite")
-#        cmds.append( f"quit" )
         with open( filename, "w" ) as f:
             for x in cmds:
                 f.write( x + "\n" )
@@ -943,6 +944,7 @@ def openmc_to_cad():
     parser.add_argument('input', help='Path to a OpenMC model.xml file or path to a directory containing OpenMC XMLs')
     parser.add_argument('-o', '--output', help='Output filename', default='openmc.jou')
     parser.add_argument('-w', '--world-size', help='Maximum width of the geometry in X, Y, and Z', nargs=3, type=int)
+    parser.add_argument('-c', '--cells', help='List of cell IDs to convert', nargs='+', type=int)
     args = parser.parse_args()
 
     model_path = Path(args.input)
@@ -954,4 +956,4 @@ def openmc_to_cad():
     else:
         model = openmc.Model.from_model_xml(model_path)
 
-    to_cubit_journal(model.geometry, world=args.world_size, filename=args.output)
+    to_cubit_journal(model.geometry, world=args.world_size, filename=args.output, cells=args.cells)
