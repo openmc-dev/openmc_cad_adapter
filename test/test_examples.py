@@ -42,7 +42,7 @@ def test_examples(example, request):
     model = openmc.Model.from_xml()
 
     world = [500, 500, 500]
-    output = example_name(example)
+    output = example_name(example) + '.jou'
     to_cubit_journal(model.geometry, world=world, filename=output)
 
     gold_file = request.path.parent / Path('gold') / Path(output)
@@ -58,7 +58,7 @@ def test_examples_cli(example, request):
 
     openmc.reset_auto_ids()
     world = [500, 500, 500]
-    output = example_name(example)
+    output = example_name(example) + '.jou'
     cmd = ['openmc_to_cad', '.', '-o', output, '--world'] + [str(w) for w in world]
     pipe = subprocess.Popen(cmd)
     pipe.wait()
