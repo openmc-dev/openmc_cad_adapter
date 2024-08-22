@@ -56,9 +56,10 @@ def test_examples_cli(example, request):
     example_path = OPENMC_EXAMPLES_DIR / example
     exec(open(example_path).read())
 
+    openmc.reset_auto_ids()
     world = [500, 500, 500]
     output = example_name(example)
-    cmd = ['openmc_to_cad', example_path.parent, '-o', output, '--world'] + [str(w) for w in world]
+    cmd = ['openmc_to_cad', '.', '-o', output, '--world'] + [str(w) for w in world]
     pipe = subprocess.Popen(cmd)
     pipe.wait()
     if pipe.returncode != 0:

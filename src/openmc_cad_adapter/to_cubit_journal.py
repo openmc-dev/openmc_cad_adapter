@@ -948,7 +948,9 @@ def openmc_to_cad():
     model_path = Path(args.input)
 
     if model_path.is_dir():
-        model = openmc.Model.from_xml(model_path)
+        if not (model_path / 'settings.xml').exists():
+            raise IOError(f'Unable to locate settings.xml in {model_path}')
+        model = openmc.Model.from_xml(*[model_path / f for f in ('geometry.xml', 'materials.xml', 'settings.xml')])
     else:
         model = openmc.Model.from_model_xml(model_path)
 
