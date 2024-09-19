@@ -1,0 +1,14 @@
+#CELL 3
+cylinder height 500 radius 0.40005
+#{ id8 = Id("body") }
+brick x 500 y 500 z 500
+#{ id9 = Id("body") }
+subtract body { id8 } from body { id9 }
+cylinder height 500 radius 0.4572
+#{ id10 = Id("body") }
+#{ id11 = Id("body") }
+intersect body { id9 } { id10 }
+#{ id12 = Id("body") }
+#{id13 = ( id11 == id12 ) ? id10 : id12}
+body { id13 } name "Cell_3"
+group "Material_3" add body { id13 } 

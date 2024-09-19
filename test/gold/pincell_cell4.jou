@@ -1,0 +1,36 @@
+#CELL 4
+cylinder height 500 radius 0.4572
+#{ id14 = Id("body") }
+brick x 500 y 500 z 500
+#{ id15 = Id("body") }
+subtract body { id14 } from body { id15 }
+brick x 500 y 500 z 500
+#{ id16 = Id("body") }
+section body { id16 } with xplane offset -0.62992 
+#{ id17 = Id("body") }
+intersect body { id15 } { id16 }
+#{ id18 = Id("body") }
+#{id19 = ( id17 == id18 ) ? id16 : id18}
+brick x 500 y 500 z 500
+#{ id20 = Id("body") }
+section body { id20 } with xplane offset 0.62992 reverse
+#{ id21 = Id("body") }
+intersect body { id19 } { id20 }
+#{ id22 = Id("body") }
+#{id23 = ( id21 == id22 ) ? id20 : id22}
+brick x 500 y 500 z 500
+#{ id24 = Id("body") }
+section body { id24 } with yplane offset -0.62992 
+#{ id25 = Id("body") }
+intersect body { id23 } { id24 }
+#{ id26 = Id("body") }
+#{id27 = ( id25 == id26 ) ? id24 : id26}
+brick x 500 y 500 z 500
+#{ id28 = Id("body") }
+section body { id28 } with yplane offset 0.62992 reverse
+#{ id29 = Id("body") }
+intersect body { id27 } { id28 }
+#{ id30 = Id("body") }
+#{id31 = ( id29 == id30 ) ? id28 : id30}
+body { id31 } name "Cell_4"
+group "Material_4" add body { id31 } 
