@@ -175,13 +175,40 @@ def vector_to_euler_xyz(v):
     return phi * oe, theta * oe, psi * oe
 
 
-def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, cells: Iterable[int] = None, filename: str = "openmc.jou", to_cubit: bool = False, seen: set = set()):
+def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
+                     cells: Iterable[int, openmc.Cell] = None,
+                     filename: str = "openmc.jou",
+                     to_cubit: bool = False,
+                     seen: set = set()):
+    """Convert an OpenMC geometry to a Cubit journal.
+
+    Parameters
+    ----------
+        geometry : openmc.Geometry
+            The geometry to convert to a Cubit journal.
+        world : Iterable[Real], optional
+            Extents of the model in X, Y, and Z. Defaults to None.
+        cells : Iterable[int, openmc.Cell], optional
+            List of cells or cell IDs to write to individual journal files. If None,
+            all cells will be written to the same journal file. Defaults to None.
+        filename : str, optional
+            Output filename. Defaults to "openmc.jou".
+        to_cubit : bool, optional
+            Uses the cubit Python module to write the model as a .cub5 file.
+            Defaults to False.
+        seen : set, optional
+            Internal parameter.
+
+    """
 
     if not filename.endswith('.jou'):
         filename += '.jou'
 
     if isinstance(geometry, openmc.Model):
         geometry = geometry.geometry
+
+    if cells is not None:
+        cells = [c if not isinstance(c, openmc.Cell) else c.id for c in cells]
 
     if to_cubit:
         try:
@@ -920,14 +947,17 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None, 
         after = len( cmds )
 
         if cell_ids is not None and cell.id in cell_ids:
-            with open( filename + f"_cell{cell.id}", "w" ) as f:
+            if filename.endswith(".jou"):
+                cell_filename = filename[:-4] + f"_cell{cell.id}.jou"
+            else:
+                cell_filename = filename + f"_cell{cell.id}"
+            with open(cell_filename, "w" ) as f:
                 for x in cmds[before:after]:
                     f.write( x + "\n" )
 
     for cell in geom.root_universe._cells.values():
-        if cells:
-            if cell.id in cells:
-                do_cell( cell, cell_ids=cells)
+        if cells is not None and cell.id in cells:
+            do_cell( cell, cell_ids=cells)
         else:
             do_cell( cell )
 

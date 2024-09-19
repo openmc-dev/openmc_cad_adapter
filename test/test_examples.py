@@ -49,6 +49,24 @@ def test_examples(example, request):
     diff_files(output, gold_file)
 
 
+def test_cell_by_cell_conversion(request):
+    openmc.reset_auto_ids()
+    exec(open(OPENMC_EXAMPLES_DIR / "pincell/build_xml.py").read())
+
+    openmc.reset_auto_ids()
+    model = openmc.Model.from_xml()
+
+    cell_ids = list(model.geometry.get_all_cells().keys())
+
+    world = [500, 500, 500]
+    output = 'pincell'
+    to_cubit_journal(model.geometry, world=world, cells=cell_ids, filename=output)
+
+    for cell_id in cell_ids:
+        output = f'pincell_cell{cell_id}.jou'
+        gold_file = request.path.parent / Path('gold') / Path(output)
+        diff_files(output, gold_file)
+
 @pytest.mark.parametrize("example", examples, ids=example_name)
 def test_examples_cli(example, request):
 
