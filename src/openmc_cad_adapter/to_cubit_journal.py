@@ -18,6 +18,7 @@ from openmc.surface import Halfspace, Quadric
 from openmc.lattice import Lattice, HexLattice
 
 from .gqs import characterize_general_quadratic
+from .cubit_util import emit_get_last_id, lastid, reset_cubit_ids
 
 
 def flatten(S):
@@ -68,6 +69,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
             Internal parameter.
 
     """
+    reset_cubit_ids()
 
     if not filename.endswith('.jou'):
         filename += '.jou'
@@ -99,12 +101,12 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         raise RuntimeError("Model extents could not be determined automatically and must be provided manually")
 
     w = world
-    cid = 1
-    def lastid():
-        nonlocal cid
-        id = cid
-        cid = cid + 1
-        return id
+    # cid = 1
+    # def lastid():
+    #     nonlocal cid
+    #     id = cid
+    #     cid = cid + 1
+    #     return id
     cmds = []
     cmds.extend( [
         "set graphics off",
@@ -123,11 +125,12 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         idn = lastid()
         return f"id{idn}"
 
-    def emit_get_last_id(type="body"):
-        idn = lastid()
-        ids = f"id{idn}"
-        python_cmd(f'#{{ {ids} = Id("{type}") }}')
-        return ids
+    # def emit_get_last_id(type="body"), cmds:
+    #     idn = lastid()
+    #     ids = f"id{idn}"
+    #     python_cmd(f'#{{ {ids} = Id("{type}") }}')
+    #     return idsl
+
 
     def rotate(id, x, y, z):
         if nonzero(x, y, z):
@@ -182,15 +185,15 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         n3 = np.add(ns, n3)
                         n4 = np.add(ns, n4)
                         cmds.append( f"create vertex {ns[0]} {ns[1]} {ns[2]}")
-                        v1 = emit_get_last_id( "vertex" )
+                        v1 = emit_get_last_id( "vertex" , cmds)
                         cmds.append( f"create vertex {n3[0]} {n3[1]} {n3[2]}")
-                        v2 = emit_get_last_id( "vertex" )
+                        v2 = emit_get_last_id( "vertex" , cmds)
                         cmds.append( f"create vertex {n4[0]} {n4[1]} {n4[2]}")
-                        v3 = emit_get_last_id( "vertex" )
+                        v3 = emit_get_last_id( "vertex" , cmds)
                         cmds.append( f"create planar surface with plane vertex {{ {v1} }} vertex {{ {v2} }} vertex {{ {v3} }} Extended Absolute {w[0]}")
-                        surf = emit_get_last_id( "surface" )
+                        surf = emit_get_last_id( "surface" , cmds)
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        ids = emit_get_last_id( ent_type )
+                        ids = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"section body {{ {ids} }} with surface {{ {surf} }} {reverse()}")
                         cmds.append( f"del surface {{ {surf} }}")
                         cmds.append( f"del vertex {{ {v1} }} {{ {v2} }} {{ {v3} }}")
@@ -202,8 +205,8 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             else:
                                     return "reverse"
                         cmds.append( f"create surface rectangle width  { 2*w[0] } zplane")
-                        sur = emit_get_last_id( "surface" )
-                        surf = emit_get_last_id( "body" )
+                        sur = emit_get_last_id("surface", cmds)
+                        surf = emit_get_last_id( "body", cmds)
                         cmds.append( f"# dir {node.side}" )
                         cmds.append( f"# c_  {ca} {cb} {cc} {cd}" )
                         n = n/np.linalg.norm(n)
@@ -220,42 +223,42 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append(f"Rotate body {{ {surf} }} about 0 0 0 direction {n3[0]} {n3[1]} {n3[2]} Angle {angle}")
                         cmds.append(f"body {{ { surf } }} move {ns[0]} {ns[1]} {ns[2]}")
                         cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        ids = emit_get_last_id( ent_type )
+                        ids = emit_get_last_id(ent_type, cmds)
                         cmds.append(f"section body {{ {ids} }} with surface {{ {sur} }} {lreverse()}")
                         cmds.append(f"del surface {{ {sur} }}")
                     return ids
                 elif surface._type == "x-plane":
                     cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                    ids = emit_get_last_id( ent_type)
+                    ids = emit_get_last_id( ent_type, cmds)
                     cmds.append(f"section body {{ {ids} }} with xplane offset {surface.coefficients['x0']} {reverse()}")
                     return ids
                 elif surface._type == "y-plane":
                     cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                    ids = emit_get_last_id(ent_type)
+                    ids = emit_get_last_id(ent_type, cmds)
                     cmds.append(f"section body {{ {ids} }} with yplane offset {surface.coefficients['y0']} {reverse()}")
                     return ids
                 elif surface._type == "z-plane":
                     cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     cmds.append( f"section body {{ {ids} }} with zplane offset {surface.coefficients['z0']} {reverse()}")
                     return ids
                 elif surface._type == "cylinder":
                     h = inner_world[2] if inner_world else w[2]
                     cmds.append(f"cylinder height {h} radius {surface.coefficients['r']}")
-                    ids = emit_get_last_id()
+                    ids = emit_get_last_id(cmds=cmds)
                     if node.side != '-':
                         wid = 0
                         if inner_world:
                             if hex:
                                 cmds.append(f"create prism height {inner_world[2]} sides 6 radius { ( inner_world[0] / 2 ) }")
-                                wid = emit_get_last_id(ent_type)
+                                wid = emit_get_last_id(ent_type, cmds)
                                 cmds.append(f"rotate body {{ {wid} }} about z angle 30")
                             else:
                                 cmds.append(f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}")
-                                wid = emit_get_last_id(ent_type)
+                                wid = emit_get_last_id(ent_type, cmds)
                         else:
                             cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                            wid = emit_get_last_id(ent_type)
+                            wid = emit_get_last_id(ent_type, cmds)
                         cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
                         rotate( wid, surface.coefficients['dx'], surface.coefficients['dy'], surface.coefficients['dz'] )
                         move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
@@ -266,22 +269,22 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 elif surface._type == "x-cylinder":
                     h = inner_world[0] if inner_world else w[0]
                     cmds.append(f"cylinder height {h} radius {surface.coefficients['r']}")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id(ent_type , cmds)
                     cmds.append( f"rotate body {{ { ids } }} about y angle 90")
                     if node.side != '-':
                         wid = 0
                         if inner_world:
                             if hex:
                                 cmds.append(f"create prism height {inner_world[2]} sides 6 radius { inner_world[0] / 2 } ")
-                                wid = emit_get_last_id( ent_type )
+                                wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append(f"rotate body {{ {wid} }} about z angle 30")
                                 cmds.append(f"rotate body {{ {wid} }} about y angle 90")
                             else:
                                 cmds.append(f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}")
-                                wid = emit_get_last_id(ent_type)
+                                wid = emit_get_last_id(ent_type, cmds)
                         else:
                             cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                            wid = emit_get_last_id(ent_type)
+                            wid = emit_get_last_id(ent_type, cmds)
                         cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
                         move(wid, 0, surface.coefficients['y0'], surface.coefficients['z0'])
                         return wid
@@ -290,22 +293,22 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 elif surface._type == "y-cylinder":
                     h = inner_world[1] if inner_world else w[1]
                     cmds.append(f"cylinder height {h} radius {surface.coefficients['r']}")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id(ent_type, cmds)
                     cmds.append(f"rotate body {{ {ids} }} about x angle 90")
                     if node.side != '-':
                         wid = 0
                         if inner_world:
                             if hex:
                                 cmds.append(f"create prism height {inner_world[2]} sides 6 radius { ( inner_world[0] / 2) }")
-                                wid = emit_get_last_id( ent_type )
+                                wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append(f"rotate body {{ {wid} }} about z angle 30")
                                 cmds.append(f"rotate body {{ {wid} }} about x angle 90")
                             else:
                                 cmds.append(f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}")
-                                wid = emit_get_last_id(ent_type)
+                                wid = emit_get_last_id(ent_type, cmds)
                         else:
                             cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                            wid = emit_get_last_id(ent_type)
+                            wid = emit_get_last_id(ent_type, cmds)
                         cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
                         move(wid, surface.coefficients['x0'], 0, surface.coefficients['z0'])
                         return wid
@@ -314,20 +317,20 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 elif surface._type == "z-cylinder":
                     h = inner_world[2] if inner_world else w[2]
                     cmds.append( f"cylinder height {h} radius {surface.coefficients['r']}")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     if node.side != '-':
                         wid = 0
                         if inner_world:
                             if hex:
                                 cmds.append(f"create prism height {inner_world[2]} sides 6 radius { ( inner_world[0] / 2 ) }")
-                                wid = emit_get_last_id(ent_type)
+                                wid = emit_get_last_id(ent_type, cmds)
                                 cmds.append(f"rotate body {{ {wid} }} about z angle 30")
                             else:
                                 cmds.append(f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}")
-                                wid = emit_get_last_id(ent_type)
+                                wid = emit_get_last_id(ent_type, cmds)
                         else:
                             cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                            wid = emit_get_last_id( ent_type )
+                            wid = emit_get_last_id( ent_type , cmds)
                         cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
                         move(wid, surface.coefficients['x0'], surface.coefficients['y0'], 0)
                         return wid
@@ -335,7 +338,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     return ids
                 elif surface._type == "sphere":
                     cmds.append( f"sphere redius {surface.coefficients['r']}")
-                    ids = emit_get_last_id(ent_type)
+                    ids = emit_get_last_id(ent_type, cmds)
                     move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
                     pass
                 elif surface._type == "cone":
@@ -343,11 +346,11 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     pass
                 elif surface._type == "x-cone":
                     cmds.append( f"create frustum height {w[0]} radius {math.sqrt(surface.coefficients['r2']*w[0])} top 0")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     cmds.append( f"rotate body {{ {ids} }} about y angle 90")
                     if node.side != '-':
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type )
+                        wid = emit_get_last_id( ent_type , cmds)
                         cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
                         move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
                         return wid
@@ -355,11 +358,11 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     return ids
                 elif surface._type == "y-cone":
                     cmds.append( f"create frustum height {w[1]} radius {math.sqrt(surface.coefficients['r2']*w[1])} top 0")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     cmds.append( f"rotate body {{ {ids} }} about x angle 90")
                     if node.side != '-':
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type )
+                        wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
                         move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
                         return wid
@@ -367,10 +370,10 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     return ids
                 elif surface._type == "z-cone":
                     cmds.append( f"create frustum height {w[2]} radius {math.sqrt(surface.coefficients['r2']*w[2])} top 0")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     if node.side != '-':
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type )
+                        wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
                         move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
                         return wid
@@ -378,11 +381,11 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     return ids
                 elif surface._type == "x-torus":
                     cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     cmds.append( f"rotate body {{ {ids} }} about y angle 90")
                     if node.side != '-':
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type )
+                        wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
                         move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
                         return wid
@@ -390,21 +393,21 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     return ids
                 elif surface._type == "y-torus":
                     cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     cmds.append( f"rotate body {{ {ids} }} about x angle 90")
                     if node.side != '-':
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type )
+                        wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {id} }} from body {{ {wid} }}" )
                         move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
                         return wid
                     return ids
                 elif surface._type == "z-torus":
                     cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
-                    ids = emit_get_last_id( ent_type )
+                    ids = emit_get_last_id( ent_type , cmds)
                     if node.side != '-':
                         cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                        wid = emit_get_last_id(ent_type)
+                        wid = emit_get_last_id(ent_type, cmds)
                         cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
                         move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
                         return wid
@@ -449,7 +452,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             r2 = math.sqrt( abs( -K_/B_ ) )
                             r3 = math.sqrt( abs( -K_/C_ ) )
                             cmds.append( f"sphere redius 1")
-                            ids = emit_get_last_id( ent_type )
+                            ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"body {{ { ids } }} scale x { r1 } y { r2 } z { r3 }")
                             move( ids, translation[0,0], translation[1,0], translation[2,0] )
                     elif gq_type == ELLIPTIC_CYLINDER : #7
@@ -459,22 +462,22 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             r1 = math.sqrt( abs( K_/C_ ) )
                             r2 = math.sqrt( abs( K_/B_ ) )
                             cmds.append( f"cylinder height {h} Major Radius {r1} Minor Radius {r2}")
-                            ids = emit_get_last_id( ent_type )
+                            ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"rotate body {{ { ids } }} about y angle 90")
                             if node.side != '-':
                                 wid = 0
                                 if inner_world:
                                     if hex:
                                         cmds.append( f"create prism height {inner_world[2]} sides 6 radius { inner_world[0] / 2 } " )
-                                        wid = emit_get_last_id( ent_type )
+                                        wid = emit_get_last_id( ent_type , cmds)
                                         cmds.append( f"rotate body {{ {wid} }} about z angle 30" )
                                         cmds.append( f"rotate body {{ {wid} }} about y angle 90")
                                     else:
                                         cmds.append( f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}" )
-                                        wid = emit_get_last_id( ent_type )
+                                        wid = emit_get_last_id( ent_type , cmds)
                                 else:
                                     cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                                    wid = emit_get_last_id( ent_type )
+                                    wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
                                 cmds.append( f"Rotate body {{ {wid } }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
                                 move( wid, translation[0,0], translation[1,0], translation[2,0] )
@@ -488,22 +491,22 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             r1 = math.sqrt( abs( K_/A_ ) )
                             r2 = math.sqrt( abs( K_/C_ ) )
                             cmds.append( f"cylinder height {h} Major Radius {r1} Minor Radius {r2}")
-                            ids = emit_get_last_id( ent_type )
+                            ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"rotate body {{ { ids } }} about x angle 90")
                             if node.side != '-':
                                 wid = 0
                                 if inner_world:
                                     if hex:
                                         cmds.append( f"create prism height {inner_world[2]} sides 6 radius { inner_world[0] / 2 } " )
-                                        wid = emit_get_last_id( ent_type )
+                                        wid = emit_get_last_id( ent_type , cmds)
                                         cmds.append( f"rotate body {{ {wid} }} about z angle 30" )
                                         cmds.append( f"rotate body {{ {wid} }} about y angle 90")
                                     else:
                                         cmds.append( f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}" )
-                                        wid = emit_get_last_id( ent_type )
+                                        wid = emit_get_last_id( ent_type , cmds)
                                 else:
                                     cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                                    wid = emit_get_last_id( ent_type )
+                                    wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
                                 cmds.append( f"Rotate body {{ {wid } }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
                                 move( wid, translation[0,0], translation[1,0], translation[2,0] )
@@ -517,21 +520,21 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             r1 = math.sqrt( abs( K_/A_ ) )
                             r2 = math.sqrt( abs( K_/B_ ) )
                             cmds.append( f"cylinder height {h} Major Radius {r1} Minor Radius {r2}")
-                            ids = emit_get_last_id( ent_type )
+                            ids = emit_get_last_id( ent_type , cmds)
                             if node.side != '-':
                                 wid = 0
                                 if inner_world:
                                     if hex:
                                         cmds.append( f"create prism height {inner_world[2]} sides 6 radius { inner_world[0] / 2 } " )
-                                        wid = emit_get_last_id( ent_type )
+                                        wid = emit_get_last_id( ent_type , cmds)
                                         cmds.append( f"rotate body {{ {wid} }} about z angle 30" )
                                         cmds.append( f"rotate body {{ {wid} }} about y angle 90")
                                     else:
                                         cmds.append( f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}" )
-                                        wid = emit_get_last_id( ent_type )
+                                        wid = emit_get_last_id( ent_type , cmds)
                                 else:
                                     cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                                    wid = emit_get_last_id( ent_type )
+                                    wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
                                 cmds.append( f"Rotate body {{ {wid } }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
                                 move( wid, translation[0,0], translation[1,0], translation[2,0] )
@@ -547,10 +550,10 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             rot_angle = - 90
                             rot_axis = 1
                             cmds.append( f"create frustum height {h} Major Radius {major} Minor Radius {minor} top 0")
-                            ids = emit_get_last_id( ent_type )
+                            ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"rotate body {{ { ids } }} about y angle -90")
                             cmds.append( f"copy body {{ { ids } }}")
-                            mirror = emit_get_last_id( ent_type )
+                            mirror = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"rotate body {{ { mirror } }} about 0 0 0 angle 180")
                             cmds.append( f"unit body {{ { ids } }} {{ { mirror } }}")
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
@@ -563,10 +566,10 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             rot_angle = 90
                             rot_axis = 0
                             cmds.append( f"create frustum height {h} Major Radius {major} Minor Radius {minor} top 0")
-                            ids = emit_get_last_id( ent_type )
+                            ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"rotate body {{ { ids } }} about x angle 90")
                             cmds.append( f"copy body {{ { ids } }}")
-                            mirror = emit_get_last_id( ent_type )
+                            mirror = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"rotate body {{ { mirror } }} about 0 0 0 angle 180")
                             cmds.append( f"unit body {{ { ids } }} {{ { mirror } }}")
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
@@ -579,9 +582,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             rot_angle = 180
                             rot_axis = 0
                             cmds.append( f"create frustum height {h} Major Radius {major} Minor Radius {minor} top 0")
-                            ids = emit_get_last_id( ent_type )
+                            ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"copy body {{ { ids } }}")
-                            mirror = emit_get_last_id( ent_type )
+                            mirror = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"rotate body {{ { mirror } }} about 0 0 0 angle 180")
                             cmds.append( f"unit body {{ { ids } }} {{ { mirror } }}")
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
@@ -595,25 +598,25 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
             print( "Complement:" )
             id = surface_to_cubit_journal(node.node, w, indent + 1, inner_world, ent_type = ent_type )
             cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-            wid = emit_get_last_id( ent_type )
+            wid = emit_get_last_id( ent_type , cmds)
             cmds.append( f"subtract body {{ {id} }} from body {{ {wid} }}" )
-            return emit_get_last_id( ent_type )
+            return emit_get_last_id( ent_type , cmds)
         elif isinstance(node, Intersection):
             last = 0
             if len( node ) > 0:
                 last = surface_to_cubit_journal( node[0], w, indent + 1, inner_world, ent_type = ent_type ,)
                 for subnode in node[1:]:
                     s = surface_to_cubit_journal( subnode, w, indent + 1, inner_world, ent_type = ent_type ,)
-                    before = emit_get_last_id()
+                    before = emit_get_last_id(cmds=cmds)
                     cmds.append( f"intersect {ent_type} {{ {last} }} {{ {s} }}" )
-                    after = emit_get_last_id()
+                    after = emit_get_last_id(cmds=cmds)
                     last = new_variable();
                     cmds.append( f"#{{{last} = ( {before} == {after} ) ? {s} : {after}}}" )
                 if inner_world:
                     cmds.append( f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}" )
-                    iwid = emit_get_last_id( ent_type )
+                    iwid = emit_get_last_id( ent_type , cmds)
                     cmds.append( f"intersect {ent_type} {{ {last} }} {{ {iwid} }}" )
-                    return emit_get_last_id( ent_type )
+                    return emit_get_last_id( ent_type , cmds)
             return last
         elif isinstance(node, Union):
             if len( node ) > 0:
@@ -624,7 +627,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     cmds.append( f"unite {local_ent_type} {{ {first} }} {{ {s} }}" )
                 if inner_world:
                     cmds.append( f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}" )
-                    iwid = emit_get_last_id( local_ent_type )
+                    iwid = emit_get_last_id( local_ent_type , cmds)
                     cmds.append( f"intersect {ent_type} {{ {last} }} {{ {iwid} }}" )
                     return first
             return first
@@ -644,7 +647,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 results.append( id )
             elif hex:
                 cmds.append( f"create prism height {inner_world[2]} sides 6 radius { ( inner_world[0] / 2) }" )
-                wid = emit_get_last_id( ent_type )
+                wid = emit_get_last_id( ent_type , cmds)
                 cmds.append( f"rotate body {{ {wid} }} about z angle 30" )
                 results.append( wid )
 
