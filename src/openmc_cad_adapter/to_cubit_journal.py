@@ -19,6 +19,7 @@ from openmc.lattice import Lattice, HexLattice
 
 from .gqs import characterize_general_quadratic
 from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable
+from .geom_util import rotate, move
 
 
 def flatten(S):
@@ -29,19 +30,6 @@ def flatten(S):
     return S[:1] + flatten(S[1:])
 
 
-def vector_to_euler_xyz(v):
-    x, y, z = v
-    phi = math.atan2(z, x)
-    theta = math.acos(x / math.sqrt(x**2 + y**2))
-    psi = math.atan2(y * math.cos(theta), x)
-
-    # Ensure angles are within [0, 2*pi] range
-    phi %= (2 * math.pi)
-    theta %= (2 * math.pi)
-    psi %= (2 * math.pi)
-
-    oe = 180 / math.pi
-    return phi * oe, theta * oe, psi * oe
 
 
 def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
@@ -114,22 +102,6 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
     def cubit_cmd(s):
         cmds.append(s)
 
-    def rotate(id, x, y, z):
-        if nonzero(x, y, z):
-            phi, theta, psi = vector_to_euler_xyz((x, y, z))
-            cubit_cmd(f"body {{ {id} }} rotate {phi} about Z")
-            cubit_cmd(f"body {{ {id} }} rotate {theta} about Y")
-            cubit_cmd(f"body {{ {id} }} rotate {psi} about X")
-
-    def nonzero(*args):
-        return any(arg!= 0 for arg in args)
-
-    def move( id, x, y, z ):
-        if nonzero( x, y, z ):
-           cubit_cmd( f"body {{ {id} }} move {x} {y} {z}" )
-
-    def make_world_brick():
-        pass
 
     def surface_to_cubit_journal(node, w, indent = 0, inner_world = None, hex = False, ent_type = "body" ):
         def ind():
@@ -242,11 +214,11 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
                             wid = emit_get_last_id(ent_type, cmds)
                         cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
-                        rotate( wid, surface.coefficients['dx'], surface.coefficients['dy'], surface.coefficients['dz'] )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                        rotate( wid, surface.coefficients['dx'], surface.coefficients['dy'], surface.coefficients['dz'], cmds)
+                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                         return wid
-                    rotate( ids, surface.coefficients['dx'], surface.coefficients['dy'], surface.coefficients['dz'] )
-                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                    rotate( ids, surface.coefficients['dx'], surface.coefficients['dy'], surface.coefficients['dz'], cmds)
+                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                     return ids
                 elif surface._type == "x-cylinder":
                     h = inner_world[0] if inner_world else w[0]
@@ -268,9 +240,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
                             wid = emit_get_last_id(ent_type, cmds)
                         cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
-                        move(wid, 0, surface.coefficients['y0'], surface.coefficients['z0'])
+                        move(wid, 0, surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                         return wid
-                    move(ids, 0, surface.coefficients['y0'], surface.coefficients['z0'])
+                    move(ids, 0, surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                     return ids
                 elif surface._type == "y-cylinder":
                     h = inner_world[1] if inner_world else w[1]
@@ -292,9 +264,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
                             wid = emit_get_last_id(ent_type, cmds)
                         cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
-                        move(wid, surface.coefficients['x0'], 0, surface.coefficients['z0'])
+                        move(wid, surface.coefficients['x0'], 0, surface.coefficients['z0'], cmds)
                         return wid
-                    move(ids, surface.coefficients['x0'], 0, surface.coefficients['z0'])
+                    move(ids, surface.coefficients['x0'], 0, surface.coefficients['z0'], cmds)
                     return ids
                 elif surface._type == "z-cylinder":
                     h = inner_world[2] if inner_world else w[2]
@@ -314,14 +286,14 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
                             wid = emit_get_last_id( ent_type , cmds)
                         cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
-                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], 0)
+                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], 0, cmds)
                         return wid
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], 0)
+                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], 0, cmds)
                     return ids
                 elif surface._type == "sphere":
                     cmds.append( f"sphere redius {surface.coefficients['r']}")
                     ids = emit_get_last_id(ent_type, cmds)
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
+                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                     pass
                 elif surface._type == "cone":
                     raise NotImplementedError("cone not implemented")
@@ -334,9 +306,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
                         wid = emit_get_last_id( ent_type , cmds)
                         cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
-                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
+                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                         return wid
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
+                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                     return ids
                 elif surface._type == "y-cone":
                     cmds.append( f"create frustum height {w[1]} radius {math.sqrt(surface.coefficients['r2']*w[1])} top 0")
@@ -346,9 +318,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
                         wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
                         return wid
-                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
                     return ids
                 elif surface._type == "z-cone":
                     cmds.append( f"create frustum height {w[2]} radius {math.sqrt(surface.coefficients['r2']*w[2])} top 0")
@@ -357,9 +329,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
                         wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
                         return wid
-                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
                     return ids
                 elif surface._type == "x-torus":
                     cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
@@ -369,9 +341,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
                         wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                         return wid
-                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                     return ids
                 elif surface._type == "y-torus":
                     cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
@@ -381,7 +353,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
                         wid = emit_get_last_id( ent_type , cmds)
                         cmds.append( f"subtract body {{ {id} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'] )
+                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                         return wid
                     return ids
                 elif surface._type == "z-torus":
@@ -391,9 +363,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
                         wid = emit_get_last_id(ent_type, cmds)
                         cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
-                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
+                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                         return wid
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'])
+                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
                     return ids
                 elif surface._type == "quadric":
                     (gq_type, A_, B_, C_, K_, translation, rotation_matrix) = characterize_general_quadratic(surface)
@@ -436,7 +408,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append( f"sphere redius 1")
                             ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"body {{ { ids } }} scale x { r1 } y { r2 } z { r3 }")
-                            move( ids, translation[0,0], translation[1,0], translation[2,0] )
+                            move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
                     elif gq_type == ELLIPTIC_CYLINDER : #7
                         if A_ == 0:
                             print( "X", gq_type, A_, B_, C_, K_, r_axis, r_degs )
@@ -462,10 +434,10 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                                     wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
                                 cmds.append( f"Rotate body {{ {wid } }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                                move( wid, translation[0,0], translation[1,0], translation[2,0] )
+                                move( wid, translation[0,0], translation[1,0], translation[2,0], cmds)
                                 return wid
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                            move( ids, translation[0,0], translation[1,0], translation[2,0] )
+                            move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
                             return ids
                         if B_ == 0:
                             print( "Y", gq_type, A_, B_, C_, K_ )
@@ -491,10 +463,10 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                                     wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
                                 cmds.append( f"Rotate body {{ {wid } }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                                move( wid, translation[0,0], translation[1,0], translation[2,0] )
+                                move( wid, translation[0,0], translation[1,0], translation[2,0], cmds)
                                 return wid
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                            move( ids, translation[0,0], translation[1,0], translation[2,0] )
+                            move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
                             return ids
                         if C_ == 0:
                             print( "Z", gq_type, A_, B_, C_, K_ )
@@ -519,10 +491,10 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                                     wid = emit_get_last_id( ent_type , cmds)
                                 cmds.append( f"subtract body {{ { ids } }} from body {{ { wid } }}" )
                                 cmds.append( f"Rotate body {{ {wid } }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                                move( wid, translation[0,0], translation[1,0], translation[2,0] )
+                                move( wid, translation[0,0], translation[1,0], translation[2,0], cmds)
                                 return wid
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                            move( ids, translation[0,0], translation[1,0], translation[2,0] )
+                            move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
                             return ids
                     elif gq_type == ELLIPTIC_CONE : #3
                         if A_ == 0:
@@ -539,7 +511,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append( f"rotate body {{ { mirror } }} about 0 0 0 angle 180")
                             cmds.append( f"unit body {{ { ids } }} {{ { mirror } }}")
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                            move( ids, translation[0,0], translation[1,0], translation[2,0] )
+                            move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
                             return ids
                         if B_ == 0:
                             h = inner_world[1] if inner_world else w[1]
@@ -555,7 +527,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append( f"rotate body {{ { mirror } }} about 0 0 0 angle 180")
                             cmds.append( f"unit body {{ { ids } }} {{ { mirror } }}")
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                            move( ids, translation[0,0], translation[1,0], translation[2,0] )
+                            move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
                             return ids
                         if C_ == 0:
                             h = inner_world[2] if inner_world else w[2]
@@ -570,7 +542,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             cmds.append( f"rotate body {{ { mirror } }} about 0 0 0 angle 180")
                             cmds.append( f"unit body {{ { ids } }} {{ { mirror } }}")
                             cmds.append( f"Rotate body {{ {ids} }} about 0 0 0 direction {r_axis[0]} {r_axis[1]} {r_axis[2]} Angle {r_degs}")
-                            move( ids, translation[0,0], translation[1,0], translation[2,0] )
+                            move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
                             return ids
                     else:
                         raise NotImplementedError(f"{surface.type} not implemented")
