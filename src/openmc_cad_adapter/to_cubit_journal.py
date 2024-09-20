@@ -21,6 +21,7 @@ from .gqs import characterize_general_quadratic
 from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable
 from .geom_util import rotate, move
 
+from .surfaces import CADPlane, CADXPlane, CADYPlane, CADZPlane
 
 def flatten(S):
     if S == []:
@@ -28,8 +29,6 @@ def flatten(S):
     if isinstance(S[0], list):
         return flatten(S[0]) + flatten(S[1:])
     return S[:1] + flatten(S[1:])
-
-
 
 
 def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
@@ -110,91 +109,30 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 seen.add( node.surface )
                 surface = node.surface
 
+                nonlocal cmds
+
                 def reverse():
                     return "reverse" if node.side == '-' else ""
 
                 if surface._type == "plane":
-                    ca = surface.coefficients['a']
-                    cb = surface.coefficients['b']
-                    cc = surface.coefficients['c']
-                    cd = surface.coefficients['d']
-                    n = np.array([ca, cb, cc ])
-                    maxi = 0
-                    maxv = sys.float_info.min
-                    for i in range( 0, 3 ):
-                        if n[i] > maxv:
-                            maxi = i
-                            maxv = n[i]
-
-                    ns = cd * n
-
-                    if False:
-                        n2 = np.copy( n )
-                        n2[ maxi ] = - n2[maxi]
-                        n3 = np.cross(n, n2)
-                        n4 = np.cross(n, n3)
-                        print( n2, n3, n4 )
-                        n3 = n3/np.linalg.norm(n3)
-                        n4 = n4/np.linalg.norm(n4)
-                        n3 = np.add(ns, n3)
-                        n4 = np.add(ns, n4)
-                        cmds.append( f"create vertex {ns[0]} {ns[1]} {ns[2]}")
-                        v1 = emit_get_last_id( "vertex" , cmds)
-                        cmds.append( f"create vertex {n3[0]} {n3[1]} {n3[2]}")
-                        v2 = emit_get_last_id( "vertex" , cmds)
-                        cmds.append( f"create vertex {n4[0]} {n4[1]} {n4[2]}")
-                        v3 = emit_get_last_id( "vertex" , cmds)
-                        cmds.append( f"create planar surface with plane vertex {{ {v1} }} vertex {{ {v2} }} vertex {{ {v3} }} Extended Absolute {w[0]}")
-                        surf = emit_get_last_id( "surface" , cmds)
-                        cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        ids = emit_get_last_id( ent_type , cmds)
-                        cmds.append( f"section body {{ {ids} }} with surface {{ {surf} }} {reverse()}")
-                        cmds.append( f"del surface {{ {surf} }}")
-                        cmds.append( f"del vertex {{ {v1} }} {{ {v2} }} {{ {v3} }}")
-                    else:
-                        #for some reason cubit sectioning with a surface is backwards from cubit sectioning with an axis aligned plane
-                        def lreverse():
-                            if node.side == '-':
-                                    return ""
-                            else:
-                                    return "reverse"
-                        cmds.append( f"create surface rectangle width  { 2*w[0] } zplane")
-                        sur = emit_get_last_id("surface", cmds)
-                        surf = emit_get_last_id( "body", cmds)
-                        cmds.append( f"# dir {node.side}" )
-                        cmds.append( f"# c_  {ca} {cb} {cc} {cd}" )
-                        n = n/np.linalg.norm(n)
-                        ns = cd * n
-                        zn = np.array([ 0, 0, 1 ])
-                        n3 = np.cross(n, zn)
-                        dot = np.dot(n, zn)
-                        cmds.append(f"# n3 {n3[0]} {n3[1]} {n3[2]}")
-                        degs = math.degrees(math.acos(np.dot(n, zn)))
-                        y = np.linalg.norm(n3)
-                        x = dot
-                        angle = - math.degrees(math.atan2( y, x ))
-                        if n3[0] != 0 or n3[1] != 0 or n3[2] != 0:
-                            cmds.append(f"Rotate body {{ {surf} }} about 0 0 0 direction {n3[0]} {n3[1]} {n3[2]} Angle {angle}")
-                        cmds.append(f"body {{ { surf } }} move {ns[0]} {ns[1]} {ns[2]}")
-                        cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        ids = emit_get_last_id(ent_type, cmds)
-                        cmds.append(f"section body {{ {ids} }} with surface {{ {sur} }} {lreverse()}")
-                        cmds.append(f"del surface {{ {sur} }}")
+                    CADSurface = CADPlane.from_openmc_plane(surface)
+                    ids, cad_cmds = CADSurface.to_cubit_surface(ent_type, node, w)
+                    cmds += cad_cmds
                     return ids
                 elif surface._type == "x-plane":
-                    cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                    ids = emit_get_last_id( ent_type, cmds)
-                    cmds.append(f"section body {{ {ids} }} with xplane offset {surface.coefficients['x0']} {reverse()}")
+                    cad_surface = CADXPlane.from_openmc_surface(surface)
+                    ids, surface_cmds = cad_surface.to_cubit_surface(ent_type, node, w)
+                    cmds += surface_cmds
                     return ids
                 elif surface._type == "y-plane":
-                    cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                    ids = emit_get_last_id(ent_type, cmds)
-                    cmds.append(f"section body {{ {ids} }} with yplane offset {surface.coefficients['y0']} {reverse()}")
+                    cad_surface = CADYPlane.from_openmc_surface(surface)
+                    ids, surface_cmds = cad_surface.to_cubit_surface(ent_type, node, w)
+                    cmds += surface_cmds
                     return ids
                 elif surface._type == "z-plane":
-                    cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    cmds.append( f"section body {{ {ids} }} with zplane offset {surface.coefficients['z0']} {reverse()}")
+                    cad_surface = CADZPlane.from_openmc_surface(surface)
+                    ids, surface_cmds = cad_surface.to_cubit_surface(ent_type, node, w)
+                    cmds += surface_cmds
                     return ids
                 elif surface._type == "cylinder":
                     h = inner_world[2] if inner_world else w[2]
