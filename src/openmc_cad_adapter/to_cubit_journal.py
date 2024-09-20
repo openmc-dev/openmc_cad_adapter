@@ -115,7 +115,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     return "reverse" if node.side == '-' else ""
 
                 if surface._type == "plane":
-                    CADSurface = CADPlane.from_openmc_plane(surface)
+                    CADSurface = CADPlane.from_openmc_surface(surface)
                     ids, cad_cmds = CADSurface.to_cubit_surface(ent_type, node, w)
                     cmds += cad_cmds
                     return ids
