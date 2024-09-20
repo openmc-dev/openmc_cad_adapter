@@ -18,7 +18,7 @@ from openmc.surface import Halfspace, Quadric
 from openmc.lattice import Lattice, HexLattice
 
 from .gqs import characterize_general_quadratic
-from .cubit_util import emit_get_last_id, lastid, reset_cubit_ids
+from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable
 
 
 def flatten(S):
@@ -101,12 +101,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         raise RuntimeError("Model extents could not be determined automatically and must be provided manually")
 
     w = world
-    # cid = 1
-    # def lastid():
-    #     nonlocal cid
-    #     id = cid
-    #     cid = cid + 1
-    #     return id
+
     cmds = []
     cmds.extend( [
         "set graphics off",
@@ -116,21 +111,8 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         #"set info off",
         #"set warning off",
         ])
-    def python_cmd(s):
-        cmds.append(s)
     def cubit_cmd(s):
         cmds.append(s)
-
-    def new_variable():
-        idn = lastid()
-        return f"id{idn}"
-
-    # def emit_get_last_id(type="body"), cmds:
-    #     idn = lastid()
-    #     ids = f"id{idn}"
-    #     python_cmd(f'#{{ {ids} = Id("{type}") }}')
-    #     return idsl
-
 
     def rotate(id, x, y, z):
         if nonzero(x, y, z):
@@ -610,7 +592,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     before = emit_get_last_id(cmds=cmds)
                     cmds.append( f"intersect {ent_type} {{ {last} }} {{ {s} }}" )
                     after = emit_get_last_id(cmds=cmds)
-                    last = new_variable();
+                    last = new_variable()
                     cmds.append( f"#{{{last} = ( {before} == {after} ) ? {s} : {after}}}" )
                 if inner_world:
                     cmds.append( f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}" )

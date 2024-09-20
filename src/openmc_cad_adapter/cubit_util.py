@@ -12,6 +12,11 @@ def lastid():
     return id_out
 
 
+def new_variable():
+    idn = lastid()
+    return f"id{idn}"
+
+
 def emit_get_last_id(type="body", cmds=None):
     idn = lastid()
     ids = f"id{idn}"
