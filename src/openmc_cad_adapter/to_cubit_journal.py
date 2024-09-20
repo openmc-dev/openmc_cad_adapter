@@ -23,6 +23,13 @@ from .geom_util import rotate, move
 
 from .surfaces import CADPlane, CADXPlane, CADYPlane, CADZPlane
 
+
+_SURFACE_DICTIONARY = { 'plane': CADPlane,
+                        'x-plane': CADXPlane,
+                        'y-plane': CADYPlane,
+                        'z-plane': CADZPlane,
+                      }
+
 def flatten(S):
     if S == []:
         return S
@@ -114,25 +121,10 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 def reverse():
                     return "reverse" if node.side == '-' else ""
 
-                if surface._type == "plane":
-                    CADSurface = CADPlane.from_openmc_surface(surface)
+                if surface._type in _SURFACE_DICTIONARY:
+                    CADSurface = _SURFACE_DICTIONARY[surface._type].from_openmc_surface(surface)
                     ids, cad_cmds = CADSurface.to_cubit_surface(ent_type, node, w)
                     cmds += cad_cmds
-                    return ids
-                elif surface._type == "x-plane":
-                    cad_surface = CADXPlane.from_openmc_surface(surface)
-                    ids, surface_cmds = cad_surface.to_cubit_surface(ent_type, node, w)
-                    cmds += surface_cmds
-                    return ids
-                elif surface._type == "y-plane":
-                    cad_surface = CADYPlane.from_openmc_surface(surface)
-                    ids, surface_cmds = cad_surface.to_cubit_surface(ent_type, node, w)
-                    cmds += surface_cmds
-                    return ids
-                elif surface._type == "z-plane":
-                    cad_surface = CADZPlane.from_openmc_surface(surface)
-                    ids, surface_cmds = cad_surface.to_cubit_surface(ent_type, node, w)
-                    cmds += surface_cmds
                     return ids
                 elif surface._type == "cylinder":
                     h = inner_world[2] if inner_world else w[2]
