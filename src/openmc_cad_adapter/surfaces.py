@@ -7,6 +7,7 @@ import numpy as np
 import openmc
 
 from .cubit_util import emit_get_last_id, lastid
+from .geom_util import move
 
 def indent(indent_size):
     return ' ' * (2*indent_size)
@@ -15,7 +16,7 @@ def indent(indent_size):
 class CADSurface(ABC):
 
     @abstractmethod
-    def to_cubit_surface(self, ent_type, node, model_extent):
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
         raise NotImplementedError
 
     @abstractclassmethod
@@ -29,7 +30,7 @@ class CADPlane(CADSurface, openmc.Plane):
     def lreverse(node):
         return "" if node.side == '-' else "reverse"
 
-    def to_cubit_surface(self, ent_type, node, model_extent):
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
         cmds = []
 
         n = np.array([self.coefficients[k] for k in ('a', 'b', 'c')])
@@ -41,7 +42,7 @@ class CADPlane(CADSurface, openmc.Plane):
 
         ns = cd * n
 
-        cmds.append( f"create surface rectangle width  { 2*model_extent[0] } zplane")
+        cmds.append( f"create surface rectangle width  { 2*extents[0] } zplane")
         sur, cmd = emit_get_last_id( "surface" )
         cmds.append(cmd)
         surf, cmd = emit_get_last_id( "body" )
@@ -59,12 +60,12 @@ class CADPlane(CADSurface, openmc.Plane):
         if n3[0] != 0 or n3[1] != 0 or n3[2] != 0:
             cmds.append(f"Rotate body {{ {surf} }} about 0 0 0 direction {n3[0]} {n3[1]} {n3[2]} Angle {angle}")
         cmds.append(f"body {{ { surf } }} move {ns[0]} {ns[1]} {ns[2]}")
-        cmds.append(f"brick x {model_extent[0]} y {model_extent[1]} z {model_extent[2]}" )
+        cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
         ids = emit_get_last_id( ent_type )
         cmds.append(f"section body {{ {ids} }} with surface {{ {sur} }} {self.lreverse(node)}")
         cmds.append(f"del surface {{ {sur} }}")
 
-        return cmds
+        return ids, cmds
 
     @classmethod
     def from_openmc_surface(cls, plane):
@@ -77,9 +78,9 @@ class CADXPlane(openmc.XPlane):
     def reverse(node):
         return "reverse" if node.side == '-' else ""
 
-    def to_cubit_surface(self, ent_type, node, model_extent):
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
         cad_cmds = []
-        cad_cmds.append(f"brick x {model_extent[0]} y {model_extent[1]} z {model_extent[2]}")
+        cad_cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}")
         ids = emit_get_last_id( ent_type, cad_cmds)
         cad_cmds.append(f"section body {{ {ids} }} with xplane offset {self.coefficients['x0']} {self.reverse(node)}")
         return ids, cad_cmds
@@ -95,9 +96,9 @@ class CADYPlane(openmc.YPlane):
     def reverse(node):
         return "reverse" if node.side == '-' else ""
 
-    def to_cubit_surface(self, ent_type, node, model_extent):
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
         cad_cmds = []
-        cad_cmds.append(f"brick x {model_extent[0]} y {model_extent[1]} z {model_extent[2]}")
+        cad_cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}")
         ids = emit_get_last_id( ent_type, cad_cmds)
         cad_cmds.append(f"section body {{ {ids} }} with yplane offset {self.coefficients['y0']} {self.reverse(node)}")
         return ids, cad_cmds
@@ -113,9 +114,9 @@ class CADZPlane(openmc.ZPlane):
     def reverse(node):
         return "reverse" if node.side == '-' else ""
 
-    def to_cubit_surface(self, ent_type, node, model_extent):
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
         cad_cmds = []
-        cad_cmds.append(f"brick x {model_extent[0]} y {model_extent[1]} z {model_extent[2]}")
+        cad_cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}")
         ids = emit_get_last_id( ent_type, cad_cmds)
         cad_cmds.append(f"section body {{ {ids} }} with zplane offset {self.coefficients['z0']} {self.reverse(node)}")
         return ids, cad_cmds
@@ -123,3 +124,97 @@ class CADZPlane(openmc.ZPlane):
     @classmethod
     def from_openmc_surface(cls, plane):
         return cls(z0=plane.z0, boundary_type=plane.boundary_type, albedo=plane.albedo, name=plane.name, surface_id=plane.id)
+
+class CADXCylinder(CADSurface, openmc.XCylinder):
+
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
+        cad_cmds = []
+        h = small_world[0] if small_world else extents[0]
+        cad_cmds.append( f"cylinder height {h} radius {self.r}")
+        ids = emit_get_last_id( ent_type , cad_cmds)
+        if node.side != '-':
+            wid = 0
+            if small_world:
+                if hex:
+                    cad_cmds.append(f"create prism height {small_world[2]} sides 6 radius { ( small_world[0] / 2 ) }")
+                    wid = emit_get_last_id(ent_type, cad_cmds)
+                    cad_cmds.append(f"rotate body {{ {wid} }} about z angle 30")
+                    cad_cmds.append(f"rotate body {{ {wid} }} about y angle 90")
+                else:
+                    cad_cmds.append(f"brick x {small_world[0]} y {small_world[1]} z {small_world[2]}")
+                    wid = emit_get_last_id(ent_type, cad_cmds)
+            else:
+                cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+                wid = emit_get_last_id( ent_type , cad_cmds)
+            cad_cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
+            move(wid, 0, self.y0, self.z0, cad_cmds)
+            return wid, cad_cmds
+        move(ids, 0, self.y0, self.z0, cad_cmds)
+        return ids, cad_cmds
+
+    @classmethod
+    def from_openmc_surface(cls, cyl):
+        return cls(r=cyl.r, y0=cyl.y0, z0=cyl.z0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
+
+
+class CADYCylinder(CADSurface, openmc.XCylinder):
+
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
+        cad_cmds = []
+        h = small_world[1] if small_world else extents[1]
+        cad_cmds.append( f"cylinder height {h} radius {self.r}")
+        ids = emit_get_last_id( ent_type , cad_cmds)
+        if node.side != '-':
+            wid = 0
+            if small_world:
+                if hex:
+                    cad_cmds.append(f"create prism height {small_world[2]} sides 6 radius { ( small_world[0] / 2 ) }")
+                    wid = emit_get_last_id(ent_type, cad_cmds)
+                    cad_cmds.append(f"rotate body {{ {wid} }} about z angle 30")
+                    cad_cmds.append(f"rotate body {{ {wid} }} about x angle 90")
+                else:
+                    cad_cmds.append(f"brick x {small_world[0]} y {small_world[1]} z {small_world[2]}")
+                    wid = emit_get_last_id(ent_type, cad_cmds)
+            else:
+                cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+                wid = emit_get_last_id( ent_type , cad_cmds)
+            cad_cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
+            move(wid, self.x0, 0, self.z0, cad_cmds)
+            return wid, cad_cmds
+        move(ids, self.x0, 0, self.z0, cad_cmds)
+        return ids, cad_cmds
+
+    @classmethod
+    def from_openmc_surface(cls, cyl):
+        return cls(r=cyl.r, x0=cyl.x0, z0=cyl.z0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
+
+
+class CADZCylinder(CADSurface, openmc.ZCylinder):
+
+    def to_cubit_surface(self, ent_type, node, extents, small_world=None, hex=False):
+        cad_cmds = []
+        h = small_world[2] if small_world else extents[2]
+        cad_cmds.append( f"cylinder height {h} radius {self.r}")
+        ids = emit_get_last_id( ent_type , cad_cmds)
+        if node.side != '-':
+            wid = 0
+            if small_world:
+                if hex:
+                    cad_cmds.append(f"create prism height {small_world[2]} sides 6 radius { ( small_world[0] / 2 ) }")
+                    wid = emit_get_last_id(ent_type, cad_cmds)
+                    cad_cmds.append(f"rotate body {{ {wid} }} about z angle 30")
+                else:
+                    cad_cmds.append(f"brick x {small_world[0]} y {small_world[1]} z {small_world[2]}")
+                    wid = emit_get_last_id(ent_type, cad_cmds)
+            else:
+                cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+                wid = emit_get_last_id( ent_type , cad_cmds)
+            cad_cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
+            move(wid, self.x0, self.y0, 0, cad_cmds)
+            return wid, cad_cmds
+        move(ids, self.x0, self.y0, 0, cad_cmds)
+        return ids, cad_cmds
+
+    @classmethod
+    def from_openmc_surface(cls, cyl):
+        return cls(r=cyl.r, x0=cyl.x0, y0=cyl.y0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)

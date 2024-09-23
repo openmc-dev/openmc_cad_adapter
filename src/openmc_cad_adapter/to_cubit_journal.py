@@ -21,13 +21,16 @@ from .gqs import characterize_general_quadratic
 from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable
 from .geom_util import rotate, move
 
-from .surfaces import CADPlane, CADXPlane, CADYPlane, CADZPlane
+from .surfaces import CADPlane, CADXPlane, CADYPlane, CADZPlane, CADXCylinder, CADYCylinder, CADZCylinder
 
 
 _SURFACE_DICTIONARY = { 'plane': CADPlane,
                         'x-plane': CADXPlane,
                         'y-plane': CADYPlane,
                         'z-plane': CADZPlane,
+                        'x-cylinder': CADXCylinder,
+                        'y-cylinder': CADYCylinder,
+                        'z-cylinder': CADZCylinder,
                       }
 
 def flatten(S):
@@ -123,7 +126,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
 
                 if surface._type in _SURFACE_DICTIONARY:
                     CADSurface = _SURFACE_DICTIONARY[surface._type].from_openmc_surface(surface)
-                    ids, cad_cmds = CADSurface.to_cubit_surface(ent_type, node, w)
+                    ids, cad_cmds = CADSurface.to_cubit_surface(ent_type, node, w, inner_world, hex)
                     cmds += cad_cmds
                     return ids
                 elif surface._type == "cylinder":
@@ -149,76 +152,6 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                         return wid
                     rotate( ids, surface.coefficients['dx'], surface.coefficients['dy'], surface.coefficients['dz'], cmds)
                     move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                    return ids
-                elif surface._type == "x-cylinder":
-                    h = inner_world[0] if inner_world else w[0]
-                    cmds.append(f"cylinder height {h} radius {surface.coefficients['r']}")
-                    ids = emit_get_last_id(ent_type , cmds)
-                    cmds.append( f"rotate body {{ { ids } }} about y angle 90")
-                    if node.side != '-':
-                        wid = 0
-                        if inner_world:
-                            if hex:
-                                cmds.append(f"create prism height {inner_world[2]} sides 6 radius { inner_world[0] / 2 } ")
-                                wid = emit_get_last_id( ent_type , cmds)
-                                cmds.append(f"rotate body {{ {wid} }} about z angle 30")
-                                cmds.append(f"rotate body {{ {wid} }} about y angle 90")
-                            else:
-                                cmds.append(f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}")
-                                wid = emit_get_last_id(ent_type, cmds)
-                        else:
-                            cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                            wid = emit_get_last_id(ent_type, cmds)
-                        cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
-                        move(wid, 0, surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                        return wid
-                    move(ids, 0, surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                    return ids
-                elif surface._type == "y-cylinder":
-                    h = inner_world[1] if inner_world else w[1]
-                    cmds.append(f"cylinder height {h} radius {surface.coefficients['r']}")
-                    ids = emit_get_last_id(ent_type, cmds)
-                    cmds.append(f"rotate body {{ {ids} }} about x angle 90")
-                    if node.side != '-':
-                        wid = 0
-                        if inner_world:
-                            if hex:
-                                cmds.append(f"create prism height {inner_world[2]} sides 6 radius { ( inner_world[0] / 2) }")
-                                wid = emit_get_last_id( ent_type , cmds)
-                                cmds.append(f"rotate body {{ {wid} }} about z angle 30")
-                                cmds.append(f"rotate body {{ {wid} }} about x angle 90")
-                            else:
-                                cmds.append(f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}")
-                                wid = emit_get_last_id(ent_type, cmds)
-                        else:
-                            cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                            wid = emit_get_last_id(ent_type, cmds)
-                        cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
-                        move(wid, surface.coefficients['x0'], 0, surface.coefficients['z0'], cmds)
-                        return wid
-                    move(ids, surface.coefficients['x0'], 0, surface.coefficients['z0'], cmds)
-                    return ids
-                elif surface._type == "z-cylinder":
-                    h = inner_world[2] if inner_world else w[2]
-                    cmds.append( f"cylinder height {h} radius {surface.coefficients['r']}")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    if node.side != '-':
-                        wid = 0
-                        if inner_world:
-                            if hex:
-                                cmds.append(f"create prism height {inner_world[2]} sides 6 radius { ( inner_world[0] / 2 ) }")
-                                wid = emit_get_last_id(ent_type, cmds)
-                                cmds.append(f"rotate body {{ {wid} }} about z angle 30")
-                            else:
-                                cmds.append(f"brick x {inner_world[0]} y {inner_world[1]} z {inner_world[2]}")
-                                wid = emit_get_last_id(ent_type, cmds)
-                        else:
-                            cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                            wid = emit_get_last_id( ent_type , cmds)
-                        cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
-                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], 0, cmds)
-                        return wid
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], 0, cmds)
                     return ids
                 elif surface._type == "sphere":
                     cmds.append( f"sphere redius {surface.coefficients['r']}")
