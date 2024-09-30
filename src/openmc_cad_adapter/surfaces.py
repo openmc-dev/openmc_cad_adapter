@@ -128,6 +128,7 @@ class CADZPlane(openmc.ZPlane):
 class CADCylinder(CADSurface, openmc.Cylinder):
 
     def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+        print('XCADCylinder to cubit surface')
         cad_cmds = []
         h = inner_world[2] if inner_world else extents[2]
         cad_cmds.append(f"cylinder height {h} radius {self.r}")
@@ -165,6 +166,7 @@ class CADXCylinder(CADSurface, openmc.XCylinder):
         h = inner_world[0] if inner_world else extents[0]
         cad_cmds.append( f"cylinder height {h} radius {self.r}")
         ids = emit_get_last_id( ent_type , cad_cmds)
+        cad_cmds.append(f"rotate body {{ {ids} }} about y angle 90")
         if node.side != '-':
             wid = 0
             if inner_world:
@@ -190,13 +192,14 @@ class CADXCylinder(CADSurface, openmc.XCylinder):
         return cls(r=cyl.r, y0=cyl.y0, z0=cyl.z0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
 
 
-class CADYCylinder(CADSurface, openmc.XCylinder):
+class CADYCylinder(CADSurface, openmc.YCylinder):
 
     def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         h = inner_world[1] if inner_world else extents[1]
         cad_cmds.append( f"cylinder height {h} radius {self.r}")
         ids = emit_get_last_id( ent_type , cad_cmds)
+        cad_cmds.append(f"rotate body {{ {ids} }} about x angle 90")
         if node.side != '-':
             wid = 0
             if inner_world:
@@ -251,3 +254,17 @@ class CADZCylinder(CADSurface, openmc.ZCylinder):
     @classmethod
     def from_openmc_surface(cls, cyl):
         return cls(r=cyl.r, x0=cyl.x0, y0=cyl.y0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
+
+
+class CADSphere(openmc.Sphere):
+
+    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+        cad_cmds = []
+        cad_cmds.append( f"sphere redius {self.r}")
+        ids = emit_get_last_id(ent_type, cad_cmds)
+        move(ids, self.x0, self.y0, self.z0, cad_cmds)
+        return ids, cad_cmds
+
+    @classmethod
+    def from_openmc_surface(cls, sphere):
+        return cls(r=sphere.r, x0=sphere.x0, y0=sphere.y0, z0=sphere.z0, boundary_type=sphere.boundary_type, albedo=sphere.albedo, name=sphere.name, surface_id=sphere.id)

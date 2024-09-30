@@ -10,6 +10,7 @@ import pytest
 from openmc_cad_adapter import to_cubit_journal
 import openmc
 
+from test import diff_files
 
 examples = ["pincell/build_xml.py",
             "lattice/hexagonal/build_xml.py",
@@ -19,14 +20,6 @@ if 'OPENMC_EXAMPLES_DIR' not in os.environ:
     raise EnvironmentError('Variable OPENMC_EXAMPLES_DIR is required')
 
 OPENMC_EXAMPLES_DIR = Path(os.environ['OPENMC_EXAMPLES_DIR']).resolve()
-
-
-def diff_files(a, b):
-    if not filecmp.cmp(a, b):
-        print(''.join(difflib.unified_diff(open(a, 'r').readlines(),
-                                           open(b, 'r').readlines())))
-        raise RuntimeError(f'{a} and {b} are different')
-
 
 def example_name(example):
     return '-'.join(example.split('/')[:-1])
