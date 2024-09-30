@@ -22,7 +22,8 @@ from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable
 from .geom_util import rotate, move
 
 from .surfaces import (CADPlane, CADXPlane, CADYPlane, CADZPlane,
-                       CADCylinder, CADXCylinder, CADYCylinder, CADZCylinder)
+                       CADCylinder, CADXCylinder, CADYCylinder, CADZCylinder,
+                       CADSphere)
 
 
 _SURFACE_DICTIONARY = { 'plane': CADPlane,
@@ -33,6 +34,7 @@ _SURFACE_DICTIONARY = { 'plane': CADPlane,
                         'x-cylinder': CADXCylinder,
                         'y-cylinder': CADYCylinder,
                         'z-cylinder': CADZCylinder,
+                        'sphere': CADSphere
                       }
 
 def flatten(S):
@@ -91,7 +93,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         bbox = geometry.bounding_box
         if not all(np.isfinite(bbox[0])) or not all(np.isfinite(bbox[1])):
             raise RuntimeError('Model bounds were not provided and the bounding box determined by OpenMC is not finite.'
-                               'Please provide a world size argument to proceed')
+                               ' Please provide a world size argument to proceed')
         # to ensure that the box
         box_max = np.max(np.abs(bbox[0], bbox[1]).T)
         world_size = (2 * box_max, 2 * box_max, 2 * box_max)
