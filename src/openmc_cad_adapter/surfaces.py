@@ -1,7 +1,7 @@
-from abc import ABC, abstractclassmethod, abstractmethod
-
+from abc import ABC, abstractmethod
 import sys
 import math
+import warnings
 
 import numpy as np
 import openmc
@@ -15,12 +15,31 @@ def indent(indent_size):
 
 class CADSurface(ABC):
 
-    @abstractmethod
     def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+        ids, cmds = self.to_cubit_surface_inner(ent_type, node, extents, inner_world, hex)
+        cmds += self.boundary_condition(ids)
+        return ids, cmds
+
+    @abstractmethod
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         raise NotImplementedError
 
-    @abstractclassmethod
+    def boundary_condition(self, cad_surface_ids):
+        if self.boundary_type == 'transmission':
+            return []
+        cmds = []
+        cmds.append(f'group \"boundary:{self.boundary_type}\" add surface {cad_surface_ids[2:]}')
+        return cmds
+
+    @classmethod
     def from_openmc_surface(cls, surface):
+        with warnings.catch_warnings() as w:
+            warnings.simplefilter("ignore")
+            return cls.from_openmc_surface_inner(surface)
+
+    @classmethod
+    @abstractmethod
+    def from_openmc_surface_inner(cls, surface):
         raise NotImplementedError
 
 
@@ -30,7 +49,7 @@ class CADPlane(CADSurface, openmc.Plane):
     def lreverse(node):
         return "" if node.side == '-' else "reverse"
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cmds = []
 
         n = np.array([self.coefficients[k] for k in ('a', 'b', 'c')])
@@ -65,10 +84,11 @@ class CADPlane(CADSurface, openmc.Plane):
         cmds.append(f"section body {{ {ids} }} with surface {{ {sur} }} {self.lreverse(node)}")
         cmds.append(f"del surface {{ {sur} }}")
 
+        cmds += self.boundary_condition(ids)
         return ids, cmds
 
     @classmethod
-    def from_openmc_surface(cls, plane):
+    def from_openmc_surface_inner(cls, plane):
         return cls(plane.a, plane.b, plane.c, plane.d, plane.boundary_type, plane.albedo, plane.name, plane.id)
 
 
@@ -78,7 +98,7 @@ class CADXPlane(openmc.XPlane):
     def reverse(node):
         return "reverse" if node.side == '-' else ""
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         cad_cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}")
         ids = emit_get_last_id( ent_type, cad_cmds)
@@ -86,7 +106,7 @@ class CADXPlane(openmc.XPlane):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, plane):
+    def from_openmc_surface_inner(cls, plane):
         return cls(x0=plane.x0, boundary_type=plane.boundary_type, albedo=plane.albedo, name=plane.name, surface_id=plane.id)
 
 
@@ -96,7 +116,7 @@ class CADYPlane(openmc.YPlane):
     def reverse(node):
         return "reverse" if node.side == '-' else ""
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         cad_cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}")
         ids = emit_get_last_id( ent_type, cad_cmds)
@@ -104,17 +124,17 @@ class CADYPlane(openmc.YPlane):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, plane):
+    def from_openmc_surface_inner(cls, plane):
         return cls(y0=plane.y0, boundary_type=plane.boundary_type, albedo=plane.albedo, name=plane.name, surface_id=plane.id)
 
 
-class CADZPlane(openmc.ZPlane):
+class CADZPlane(CADSurface, openmc.ZPlane):
 
     @staticmethod
     def reverse(node):
         return "reverse" if node.side == '-' else ""
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         cad_cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}")
         ids = emit_get_last_id( ent_type, cad_cmds)
@@ -122,12 +142,12 @@ class CADZPlane(openmc.ZPlane):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, plane):
+    def from_openmc_surface_inner(cls, plane):
         return cls(z0=plane.z0, boundary_type=plane.boundary_type, albedo=plane.albedo, name=plane.name, surface_id=plane.id)
 
 class CADCylinder(CADSurface, openmc.Cylinder):
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         print('XCADCylinder to cubit surface')
         cad_cmds = []
         h = inner_world[2] if inner_world else extents[2]
@@ -155,13 +175,13 @@ class CADCylinder(CADSurface, openmc.Cylinder):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, cyl):
+    def from_openmc_surface_inner(cls, cyl):
         return cls(r=cyl.r, x0=cyl.x0, y0=cyl.y0, z0=cyl.z0, dx=cyl.dx, dy=cyl.dy, dz=cyl.dz,
                    boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
 
 class CADXCylinder(CADSurface, openmc.XCylinder):
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         h = inner_world[0] if inner_world else extents[0]
         cad_cmds.append( f"cylinder height {h} radius {self.r}")
@@ -188,13 +208,13 @@ class CADXCylinder(CADSurface, openmc.XCylinder):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, cyl):
+    def from_openmc_surface_inner(cls, cyl):
         return cls(r=cyl.r, y0=cyl.y0, z0=cyl.z0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
 
 
 class CADYCylinder(CADSurface, openmc.YCylinder):
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         h = inner_world[1] if inner_world else extents[1]
         cad_cmds.append( f"cylinder height {h} radius {self.r}")
@@ -221,13 +241,13 @@ class CADYCylinder(CADSurface, openmc.YCylinder):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, cyl):
+    def from_openmc_surface_inner(cls, cyl):
         return cls(r=cyl.r, x0=cyl.x0, z0=cyl.z0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
 
 
 class CADZCylinder(CADSurface, openmc.ZCylinder):
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         h = inner_world[2] if inner_world else extents[2]
         cad_cmds.append( f"cylinder height {h} radius {self.r}")
@@ -252,13 +272,13 @@ class CADZCylinder(CADSurface, openmc.ZCylinder):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, cyl):
+    def from_openmc_surface_inner(cls, cyl):
         return cls(r=cyl.r, x0=cyl.x0, y0=cyl.y0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
 
 
 class CADSphere(openmc.Sphere):
 
-    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
         cad_cmds.append( f"sphere redius {self.r}")
         ids = emit_get_last_id(ent_type, cad_cmds)
@@ -266,5 +286,5 @@ class CADSphere(openmc.Sphere):
         return ids, cad_cmds
 
     @classmethod
-    def from_openmc_surface(cls, sphere):
+    def from_openmc_surface_inner(cls, sphere):
         return cls(r=sphere.r, x0=sphere.x0, y0=sphere.y0, z0=sphere.z0, boundary_type=sphere.boundary_type, albedo=sphere.albedo, name=sphere.name, surface_id=sphere.id)

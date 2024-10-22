@@ -129,8 +129,8 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     return "reverse" if node.side == '-' else ""
 
                 if surface._type in _SURFACE_DICTIONARY:
-                    CADSurface = _SURFACE_DICTIONARY[surface._type].from_openmc_surface(surface)
-                    ids, cad_cmds = CADSurface.to_cubit_surface(ent_type, node, w, inner_world, hex)
+                    cad_surface = _SURFACE_DICTIONARY[surface._type].from_openmc_surface(surface)
+                    ids, cad_cmds = cad_surface.to_cubit_surface(ent_type, node, w, inner_world, hex)
                     cmds += cad_cmds
                     return ids
                 elif surface._type == "sphere":
@@ -610,8 +610,14 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         before = len( cmds )
         cmds.append( f"#CELL {cell.id}" )
         vol_or_body = process_node_or_fill( cell, w )
-        if cell.fill_type == "material":
-            cmds.append( f'group \"Material_{cell.fill.id}\" add body {{ { vol_or_body[0] } }} ' )
+        if cell.fill is None:
+            cmds.append(f'group "mat:void" add body {{ { vol_or_body[0] } }} ')
+        elif cell.fill_type == "material":
+            mat_identifier = f"mat:{cell.fill.id}"
+            # use material names when possible
+            if cell.fill.name is not None and cell.fill.name:
+                mat_identifier = f"mat:{cell.fill.name}"
+            cmds.append( f'group \"{mat_identifier}\" add body {{ { vol_or_body[0] } }} ' )
         after = len( cmds )
 
         if cell_ids is not None and cell.id in cell_ids:
