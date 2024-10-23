@@ -92,7 +92,7 @@ class CADPlane(CADSurface, openmc.Plane):
         return cls(plane.a, plane.b, plane.c, plane.d, plane.boundary_type, plane.albedo, plane.name, plane.id)
 
 
-class CADXPlane(openmc.XPlane):
+class CADXPlane(CADSurface, openmc.XPlane):
 
     @staticmethod
     def reverse(node):
@@ -110,7 +110,7 @@ class CADXPlane(openmc.XPlane):
         return cls(x0=plane.x0, boundary_type=plane.boundary_type, albedo=plane.albedo, name=plane.name, surface_id=plane.id)
 
 
-class CADYPlane(openmc.YPlane):
+class CADYPlane(CADSurface, openmc.YPlane):
 
     @staticmethod
     def reverse(node):
@@ -276,7 +276,7 @@ class CADZCylinder(CADSurface, openmc.ZCylinder):
         return cls(r=cyl.r, x0=cyl.x0, y0=cyl.y0, boundary_type=cyl.boundary_type, albedo=cyl.albedo, name=cyl.name, surface_id=cyl.id)
 
 
-class CADSphere(openmc.Sphere):
+class CADSphere(CADSurface, openmc.Sphere):
 
     def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
