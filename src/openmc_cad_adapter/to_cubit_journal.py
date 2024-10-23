@@ -4,6 +4,7 @@ import math
 from numbers import Real
 from pathlib import Path
 import sys
+import warnings
 
 from numpy.linalg import matrix_rank
 import numpy as np
@@ -116,7 +117,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         cmds.append(s)
 
 
-    def surface_to_cubit_journal(node, w, indent = 0, inner_world = None, hex = False, ent_type = "body" ):
+    def surface_to_cubit_journal(node, w, indent = 0, inner_world = None, hex = False, ent_type = "body", materials='group'):
         def ind():
             return ' ' * (2*indent)
         if isinstance(node, Halfspace):
@@ -617,6 +618,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
             # use material names when possible
             if cell.fill.name is not None and cell.fill.name:
                 mat_identifier = f"mat:{cell.fill.name}"
+            if len(mat_identifier) > 32:
+                mat_identifier = mat_identifier[:32]
+                warnings.warn(f'Truncating material name {mat_identifier} to 32 characters')
             cmds.append( f'group \"{mat_identifier}\" add body {{ { vol_or_body[0] } }} ' )
         after = len( cmds )
 
@@ -645,6 +649,30 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
         for x in cmds:
             cubit.cmd( x )
             cubit.cmd(f"save as {filename[:-4]}.cub overwrite")
+
+
+def material_assignment(cell, geom_id, assignment_type='group'):
+    if cell.fill is None:
+        mat_identifier = "mat:void"
+    elif cell.fill_type == "material":
+        mat_identifier = f"mat:{cell.fill.id}"
+        # use material names when possible
+        if cell.fill.name is not None and cell.fill.name:
+            mat_identifier = f"mat:{cell.fill.name}"
+    else:
+        return []
+
+    if len(mat_identifier) > 32:
+        mat_identifier = mat_identifier[:32]
+        warnings.warn(f'Truncating material name {mat_identifier} to 32 characters')
+
+    cmds = []
+    if assignment_type == 'group':
+        cmds.append(f'group \"{mat_identifier}\" add body {{ { geom_id } }}')
+    else:
+        raise ValueError(f"Unknown material assignment type requested: {assignment_type}")
+
+    return cmds
 
 
 def openmc_to_cad():
