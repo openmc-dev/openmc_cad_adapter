@@ -33,4 +33,4 @@ intersect body { id27 } { id28 }
 #{ id30 = Id("body") }
 #{id31 = ( id29 == id30 ) ? id28 : id30}
 body { id31 } name "Cell_4"
-group "mat:Borated water" add body { id31 } 
+group "Material_4" add body { id31 } 

@@ -1,3 +1,38 @@
+set graphics off
+set journal off
+#CELL 1
+cylinder height 500 radius 0.39218
+#{ id1 = Id("body") }
+body { id1 } name "Cell_1"
+group "Material_1" add body { id1 } 
+#CELL 2
+cylinder height 500 radius 0.39218
+#{ id2 = Id("body") }
+brick x 500 y 500 z 500
+#{ id3 = Id("body") }
+subtract body { id2 } from body { id3 }
+cylinder height 500 radius 0.40005
+#{ id4 = Id("body") }
+#{ id5 = Id("body") }
+intersect body { id3 } { id4 }
+#{ id6 = Id("body") }
+#{id7 = ( id5 == id6 ) ? id4 : id6}
+body { id7 } name "Cell_2"
+group "Material_2" add body { id7 } 
+#CELL 3
+cylinder height 500 radius 0.40005
+#{ id8 = Id("body") }
+brick x 500 y 500 z 500
+#{ id9 = Id("body") }
+subtract body { id8 } from body { id9 }
+cylinder height 500 radius 0.4572
+#{ id10 = Id("body") }
+#{ id11 = Id("body") }
+intersect body { id9 } { id10 }
+#{ id12 = Id("body") }
+#{id13 = ( id11 == id12 ) ? id10 : id12}
+body { id13 } name "Cell_3"
+group "Material_3" add body { id13 } 
 #CELL 4
 cylinder height 500 radius 0.4572
 #{ id14 = Id("body") }
@@ -33,4 +68,4 @@ intersect body { id27 } { id28 }
 #{ id30 = Id("body") }
 #{id31 = ( id29 == id30 ) ? id28 : id30}
 body { id31 } name "Cell_4"
-group "mat:Borated water" add body { id31 } 
+group "Material_4" add body { id31 } 

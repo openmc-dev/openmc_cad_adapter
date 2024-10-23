@@ -6,3 +6,4 @@ cylinder height 500 radius 6.0
 body { id1 } rotate 90.0 about Y
 body { id1 } rotate 45.0 about Z
 body { id1 } name "Cell_3"
+group "mat:void" add body { id1 } 
