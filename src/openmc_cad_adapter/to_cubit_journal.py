@@ -92,8 +92,6 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
 
     cmds = []
     cmds.extend( [
-        "set graphics off",
-        "set journal off",
         #"set undo off",
         #"set default autosizing off",   # especially when the CAD is complex (contains many spline surfaces) this can have a massive effect
         #"set info off",
@@ -538,9 +536,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 cell_filename = filename[:-4] + f"_cell{cell.id}.jou"
             else:
                 cell_filename = filename + f"_cell{cell.id}"
-            with open(cell_filename, "w" ) as f:
-                for x in cmds[before:after]:
-                    f.write( x + "\n" )
+            write_journal_file(cell_filename, cmds[before:after])
 
     for cell in geom.root_universe._cells.values():
         if cells is not None and cell.id in cells:
@@ -549,15 +545,35 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
             do_cell( cell )
 
     if filename:
-        with open( filename, "w" ) as f:
-            for x in cmds:
-                f.write( x + "\n" )
+        write_journal_file(filename, cmds)
 
     if to_cubit:
         cubit.cmd( "reset" )
         for x in cmds:
             cubit.cmd( x )
             cubit.cmd(f"save as {filename[:-4]}.cub overwrite")
+
+
+def write_journal_file(filename, cmds, verbose_journal=False):
+    with open(filename, "w") as f:
+        if not verbose_journal:
+            f.write("set echo off\n")
+            f.write("set info off\n")
+            f.write("set warning off\n")
+            f.write("graphics pause\n")
+            f.write("set journal off\n")
+            f.write("set default autosize off\n")
+        for x in cmds:
+            f.write(x + "\n")
+        if not verbose_journal:
+            f.write("graphics flush\n")
+            f.write("set default autosize on\n")
+            f.write("zoom reset\n")
+            f.write("set echo on\n")
+            f.write("set info on\n")
+            f.write("set warning on\n")
+            f.write("set journal on\n")
+
 
 
 def material_assignment(cell, geom_id, assignment_type='group'):
