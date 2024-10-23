@@ -17,7 +17,8 @@ class CADSurface(ABC):
 
     def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
         ids, cmds = self.to_cubit_surface_inner(ent_type, node, extents, inner_world, hex)
-        cmds += self.boundary_condition(ids)
+        # TODO: Add boundary condition to the correct surface(s)
+        # cmds += self.boundary_condition(ids)
         return ids, cmds
 
     @abstractmethod
