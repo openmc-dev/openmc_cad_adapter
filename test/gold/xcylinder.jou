@@ -1,5 +1,9 @@
-set graphics off
+set echo off
+set info off
+set warning off
+graphics pause
 set journal off
+set default autosize off
 #CELL 1
 cylinder height 500 radius 1.0
 #{ id1 = Id("body") }
@@ -7,3 +11,10 @@ rotate body { id1 } about y angle 90
 body { id1 } move 0 10.0 5.0
 body { id1 } name "Cell_1"
 group "mat:void" add body { id1 } 
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on

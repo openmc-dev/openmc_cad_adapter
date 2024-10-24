@@ -1,3 +1,9 @@
+set echo off
+set info off
+set warning off
+graphics pause
+set journal off
+set default autosize off
 #CELL 2
 cylinder height 500 radius 0.39218
 #{ id2 = Id("body") }
@@ -12,3 +18,10 @@ intersect body { id3 } { id4 }
 #{id7 = ( id5 == id6 ) ? id4 : id6}
 body { id7 } name "Cell_2"
 group "mat:Helium for gap" add body { id7 } 
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on

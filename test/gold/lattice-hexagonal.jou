@@ -1,5 +1,9 @@
-set graphics off
+set echo off
+set info off
+set warning off
+graphics pause
 set journal off
+set default autosize off
 #CELL 1
 create prism height 2.0 sides 6 radius 0.5
 #{ id1 = Id("body") }
@@ -643,3 +647,10 @@ rotate body { id159 } about z angle 30
 subtract body { id158 } from body { id159 }
 body { id159 } name "cell 6"
 move body { id159 } midpoint location 0.0 0.0 4.0
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on

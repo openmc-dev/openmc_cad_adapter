@@ -1,3 +1,9 @@
+set echo off
+set info off
+set warning off
+graphics pause
+set journal off
+set default autosize off
 #CELL 3
 cylinder height 500 radius 0.40005
 #{ id8 = Id("body") }
@@ -12,3 +18,10 @@ intersect body { id9 } { id10 }
 #{id13 = ( id11 == id12 ) ? id10 : id12}
 body { id13 } name "Cell_3"
 group "mat:Zircaloy 4" add body { id13 } 
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on

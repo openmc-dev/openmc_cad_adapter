@@ -1,3 +1,9 @@
+set echo off
+set info off
+set warning off
+graphics pause
+set journal off
+set default autosize off
 #CELL 4
 cylinder height 500 radius 0.4572
 #{ id14 = Id("body") }
@@ -34,3 +40,10 @@ intersect body { id27 } { id28 }
 #{id31 = ( id29 == id30 ) ? id28 : id30}
 body { id31 } name "Cell_4"
 group "mat:Borated water" add body { id31 } 
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on
