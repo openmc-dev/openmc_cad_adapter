@@ -1,0 +1,8 @@
+set graphics off
+set journal off
+#CELL 6
+create frustum height 500 radius 22.360679774997898 top 0
+#{ id1 = Id("body") }
+body { id1 } move 50.0 10.0 2.0
+body { id1 } name "Cell_6"
+group "mat:void" add body { id1 } 
