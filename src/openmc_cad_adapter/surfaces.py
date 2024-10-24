@@ -354,3 +354,68 @@ class CADZCone(CADSurface, openmc.ZCone):
     @classmethod
     def from_openmc_surface_inner(cls, surface):
         return cls(x0=surface.x0, y0=surface.y0, z0=surface.z0, r2=surface.r2, boundary_type=surface.boundary_type, albedo=surface.albedo, name=surface.name, surface_id=surface.id)
+
+
+class CADTorus(CADSurface):
+
+    def check_coeefs(self):
+        if self.b != self.c:
+            raise ValueError("Only torri with constant minor radii are supported")
+
+    @classmethod
+    def from_openmc_surface_inner(cls, surface):
+        return cls(x0=surface.x0, y0=surface.y0, z0=surface.z0, a=surface.a, b=surface.b, c=surface.c, boundary_type=surface.boundary_type, albedo=surface.albedo, name=surface.name, surface_id=surface.id)
+
+class CADXTorus(CADTorus, openmc.XTorus):
+
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        self.check_coeefs()
+        cad_cmds = []
+        cad_cmds.append( f"torus major radius {self.a} minor radius {self.b}" )
+        ids = emit_get_last_id(ent_type, cad_cmds)
+        cad_cmds.append( f"rotate body {{ {ids} }} about y angle 90")
+        if node.side != '-':
+            cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+            wid = emit_get_last_id(ent_type, cad_cmds)
+            cad_cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
+            move(wid, self.x0, self.y0, self.z0, cad_cmds)
+            ids = wid
+        else:
+            move(ids, self.x0, self.y0, self.z0, cad_cmds)
+        return ids, cad_cmds
+
+
+
+class CADYTorus(CADTorus, openmc.YTorus):
+
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        cad_cmds = []
+        cad_cmds.append( f"torus major radius {self.a} minor radius {self.b}" )
+        ids = emit_get_last_id(ent_type, cad_cmds)
+        cad_cmds.append( f"rotate body {{ {ids} }} about x angle 90")
+        if node.side != '-':
+            cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+            wid = emit_get_last_id(ent_type, cad_cmds)
+            cad_cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
+            move(wid, self.x0, self.y0, self.z0, cad_cmds)
+            ids = wid
+        else:
+            move(ids, self.x0, self.y0, self.z0, cad_cmds)
+        return ids, cad_cmds
+
+
+class CADZTorus(CADTorus, openmc.ZTorus):
+
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        cad_cmds = []
+        cad_cmds.append( f"torus major radius {self.a} minor radius {self.b}" )
+        ids = emit_get_last_id(ent_type, cad_cmds)
+        if node.side != '-':
+            cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+            wid = emit_get_last_id(ent_type, cad_cmds)
+            cad_cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
+            move(wid, self.x0, self.y0, self.z0, cad_cmds)
+            ids = wid
+        else:
+            move(ids, self.x0, self.y0, self.z0, cad_cmds)
+        return ids, cad_cmds

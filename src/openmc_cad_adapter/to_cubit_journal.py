@@ -24,7 +24,7 @@ from .geom_util import rotate, move
 
 from .surfaces import (CADPlane, CADXPlane, CADYPlane, CADZPlane,
                        CADCylinder, CADXCylinder, CADYCylinder, CADZCylinder,
-                       CADSphere, CADXCone, CADYCone, CADZCone)
+                       CADSphere, CADXCone, CADYCone, CADZCone, CADXTorus, CADYTorus, CADZTorus)
 
 
 _SURFACE_DICTIONARY = { 'plane': CADPlane,
@@ -38,7 +38,10 @@ _SURFACE_DICTIONARY = { 'plane': CADPlane,
                         'sphere': CADSphere,
                         'x-cone': CADXCone,
                         'y-cone': CADYCone,
-                        'z-cone': CADZCone
+                        'z-cone': CADZCone,
+                        'x-torus': CADXTorus,
+                        'y-torus': CADYTorus,
+                        'z-torus': CADZTorus,
                       }
 
 def flatten(S):
@@ -140,40 +143,6 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 elif surface._type == "cone":
                     raise NotImplementedError("cone not implemented")
                     pass
-                elif surface._type == "x-torus":
-                    cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    cmds.append( f"rotate body {{ {ids} }} about y angle 90")
-                    if node.side != '-':
-                        cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type , cmds)
-                        cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                        return wid
-                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                    return ids
-                elif surface._type == "y-torus":
-                    cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    cmds.append( f"rotate body {{ {ids} }} about x angle 90")
-                    if node.side != '-':
-                        cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type , cmds)
-                        cmds.append( f"subtract body {{ {id} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                        return wid
-                    return ids
-                elif surface._type == "z-torus":
-                    cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    if node.side != '-':
-                        cmds.append(f"brick x {w[0]} y {w[1]} z {w[2]}")
-                        wid = emit_get_last_id(ent_type, cmds)
-                        cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
-                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                        return wid
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                    return ids
                 elif surface._type == "quadric":
                     (gq_type, A_, B_, C_, K_, translation, rotation_matrix) = characterize_general_quadratic(surface)
 
