@@ -1,5 +1,9 @@
-set graphics off
+set echo off
+set info off
+set warning off
+graphics pause
 set journal off
+set default autosize off
 #CELL 7
 cylinder height 500 radius 0.39218
 #{ id1 = Id("body") }
@@ -8093,3 +8097,10 @@ brick x 1.26 y 1.26 z 500
 subtract body { id3178 } from body { id3179 }
 body { id3179 } name "Cell_3"
 move body { id3179 } midpoint location 10.08 10.08 0 except z
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on
