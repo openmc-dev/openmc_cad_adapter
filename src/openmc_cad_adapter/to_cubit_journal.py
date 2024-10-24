@@ -575,7 +575,6 @@ def write_journal_file(filename, cmds, verbose_journal=False):
             f.write("set journal on\n")
 
 
-
 def material_assignment(cell, geom_id, assignment_type='group'):
     if cell.fill is None:
         mat_identifier = "mat:void"
