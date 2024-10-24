@@ -11,4 +11,4 @@ intersect body { id3 } { id4 }
 #{ id6 = Id("body") }
 #{id7 = ( id5 == id6 ) ? id4 : id6}
 body { id7 } name "Cell_2"
-group "mat:Helium for gap" add body { id7 } 
+group "Material_2" add body { id7 } 

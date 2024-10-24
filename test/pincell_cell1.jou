@@ -2,4 +2,4 @@
 cylinder height 500 radius 0.39218
 #{ id1 = Id("body") }
 body { id1 } name "Cell_1"
-group "mat:UO2 fuel at 2.4% wt enrichme" add body { id1 } 
+group "Material_1" add body { id1 } 

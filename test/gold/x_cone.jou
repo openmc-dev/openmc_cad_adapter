@@ -1,0 +1,9 @@
+set graphics off
+set journal off
+#CELL 4
+create frustum height 500 radius 50.0 top 0
+#{ id1 = Id("body") }
+rotate body { id1 } about y angle 90
+body { id1 } move 30.0 3.0 5.0
+body { id1 } name "Cell_4"
+group "mat:void" add body { id1 } 

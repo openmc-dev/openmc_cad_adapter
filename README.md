@@ -34,3 +34,8 @@ There has been no methodical V&V on this converter; use at your own risk!
 There are several known and many unknown limitations of this tool. It is in a
 preliminary state and subject to considerable redesign, including the addition
 of a backend for other CAD engines.
+
+Specific Limitations:
+
+  - general Cones are not handled
+  - Torii are required to have a single minor radius, OpenMC allows for different minor radii orthogonal to the toroidal axis

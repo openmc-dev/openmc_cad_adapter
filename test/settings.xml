@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<settings>
+  <run_mode>eigenvalue</run_mode>
+  <particles>10000</particles>
+  <batches>20</batches>
+  <inactive>10</inactive>
+  <keff_trigger>
+    <threshold>0.0005</threshold>
+    <type>std_dev</type>
+  </keff_trigger>
+  <source particle="neutron" strength="1.0" type="independent">
+    <space type="box">
+      <parameters>-1 -1 -1 1 1 1</parameters>
+    </space>
+    <constraints>
+      <fissionable>true</fissionable>
+    </constraints>
+  </source>
+  <trigger>
+    <active>true</active>
+    <max_batches>100</max_batches>
+  </trigger>
+</settings>

@@ -10,33 +10,37 @@ import pytest
 from openmc_cad_adapter import to_cubit_journal
 import openmc
 
+from test import diff_files
+
 
 examples = ["pincell/build_xml.py",
             "lattice/hexagonal/build_xml.py",
             "assembly/assembly.py"]
 
+
 if 'OPENMC_EXAMPLES_DIR' not in os.environ:
     raise EnvironmentError('Variable OPENMC_EXAMPLES_DIR is required')
 
+
 OPENMC_EXAMPLES_DIR = Path(os.environ['OPENMC_EXAMPLES_DIR']).resolve()
-
-
-def diff_files(a, b):
-    if not filecmp.cmp(a, b):
-        print(''.join(difflib.unified_diff(open(a, 'r').readlines(),
-                                           open(b, 'r').readlines())))
-        raise RuntimeError(f'{a} and {b} are different')
 
 
 def example_name(example):
     return '-'.join(example.split('/')[:-1])
 
 
+def generate_example_xml(example):
+    if 'assembly' in example:
+        subprocess.Popen(['python', str(OPENMC_EXAMPLES_DIR / example), '--generate']).wait()
+    else:
+        exec(open(OPENMC_EXAMPLES_DIR / example).read())
+
+
 @pytest.mark.parametrize("example", examples, ids=example_name)
-def test_examples(example, request):
+def test_examples(example, request, run_in_tmpdir):
 
     openmc.reset_auto_ids()
-    exec(open(OPENMC_EXAMPLES_DIR / example).read())
+    generate_example_xml(example)
 
     openmc.reset_auto_ids()
     model = openmc.Model.from_xml()
@@ -49,7 +53,7 @@ def test_examples(example, request):
     diff_files(output, gold_file)
 
 
-def test_cell_by_cell_conversion(request):
+def test_cell_by_cell_conversion(request, run_in_tmpdir):
     openmc.reset_auto_ids()
     exec(open(OPENMC_EXAMPLES_DIR / "pincell/build_xml.py").read())
 
@@ -67,12 +71,12 @@ def test_cell_by_cell_conversion(request):
         gold_file = request.path.parent / Path('gold') / Path(output)
         diff_files(output, gold_file)
 
+
 @pytest.mark.parametrize("example", examples, ids=example_name)
-def test_examples_cli(example, request):
+def test_examples_cli(example, request, run_in_tmpdir):
 
     openmc.reset_auto_ids()
-    example_path = OPENMC_EXAMPLES_DIR / example
-    exec(open(example_path).read())
+    generate_example_xml(example)
 
     openmc.reset_auto_ids()
     world = [500, 500, 500]

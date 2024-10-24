@@ -1,0 +1,9 @@
+set graphics off
+set journal off
+#CELL 7
+torus major radius 5.0 minor radius 2.0
+#{ id1 = Id("body") }
+rotate body { id1 } about y angle 90
+body { id1 } move 10.0 10.0 10.0
+body { id1 } name "Cell_7"
+group "mat:void" add body { id1 } 

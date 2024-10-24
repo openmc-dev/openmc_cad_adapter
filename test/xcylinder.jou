@@ -1,0 +1,8 @@
+set graphics off
+set journal off
+#CELL 1
+cylinder height 500 radius 1.0
+#{ id1 = Id("body") }
+rotate body { id1 } about y angle 90
+body { id1 } move 0 10.0 5.0
+body { id1 } name "Cell_1"
