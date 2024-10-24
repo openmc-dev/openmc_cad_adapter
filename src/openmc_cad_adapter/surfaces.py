@@ -290,6 +290,14 @@ class CADSphere(CADSurface, openmc.Sphere):
     def from_openmc_surface_inner(cls, sphere):
         return cls(r=sphere.r, x0=sphere.x0, y0=sphere.y0, z0=sphere.z0, boundary_type=sphere.boundary_type, albedo=sphere.albedo, name=sphere.name, surface_id=sphere.id)
 
+class CADCone(CADSurface):
+
+    def to_cubit_surface(self, ent_type, node, extents, inner_world=None, hex=False):
+        raise NotImplementedError('General Cones are not yet supported')
+
+    @classmethod
+    def from_openmc_surface(cls, surface):
+        raise NotImplementedError('General Cones are not yet supported')
 
 class CADXCone(CADSurface, openmc.XCone):
 

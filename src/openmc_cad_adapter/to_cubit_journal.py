@@ -120,9 +120,6 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     ids, cad_cmds = cad_surface.to_cubit_surface(ent_type, node, w, inner_world, hex)
                     cmds += cad_cmds
                     return ids
-                elif surface._type == "cone":
-                    raise NotImplementedError("cone not implemented")
-                    pass
                 elif surface._type == "quadric":
                     (gq_type, A_, B_, C_, K_, translation, rotation_matrix) = characterize_general_quadratic(surface)
 

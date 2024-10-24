@@ -77,4 +77,11 @@ def test_torus_diff_radii(request, run_in_tmpdir):
     with pytest.raises(ValueError):
         z_torus = openmc.ZTorus(x0=50.0, y0=50.0, z0=50.0, a=5.0, b=2.0, c=3.0)
         g = openmc.Geometry([openmc.Cell(region=-z_torus)])
-        to_cubit_journal(g, world=(500, 500, 500), filename='z_torus.jou')
+        to_cubit_journal(g, world=(500, 500, 500), filename='a_torus.jou')
+
+
+def test_general_cone(request, run_in_tmpdir):
+    with pytest.raises(NotImplementedError):
+        cone = openmc.Cone(x0=0.0, y0=0.0, z0=0.0, r2=6.0, dx=1, dy=1, dz=1)
+        g = openmc.Geometry([openmc.Cell(region=-cone)])
+        to_cubit_journal(g, world=(500, 500, 500), filename='cone.jou')
