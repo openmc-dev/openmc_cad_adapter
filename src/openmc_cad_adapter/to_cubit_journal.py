@@ -24,7 +24,7 @@ from .geom_util import rotate, move
 
 from .surfaces import (CADPlane, CADXPlane, CADYPlane, CADZPlane,
                        CADCylinder, CADXCylinder, CADYCylinder, CADZCylinder,
-                       CADSphere, CADXCone, CADYCone)
+                       CADSphere, CADXCone, CADYCone, CADZCone)
 
 
 _SURFACE_DICTIONARY = { 'plane': CADPlane,
@@ -38,6 +38,7 @@ _SURFACE_DICTIONARY = { 'plane': CADPlane,
                         'sphere': CADSphere,
                         'x-cone': CADXCone,
                         'y-cone': CADYCone,
+                        'z-cone': CADZCone
                       }
 
 def flatten(S):
