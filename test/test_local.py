@@ -71,3 +71,10 @@ def test_z_torus(request, run_in_tmpdir):
     g = openmc.Geometry([openmc.Cell(region=-z_torus)])
     to_cubit_journal(g, world=(500, 500, 500), filename='z_torus.jou')
     diff_gold_file('z_torus.jou')
+
+
+def test_torus_diff_radii(request, run_in_tmpdir):
+    with pytest.raises(ValueError):
+        z_torus = openmc.ZTorus(x0=50.0, y0=50.0, z0=50.0, a=5.0, b=2.0, c=3.0)
+        g = openmc.Geometry([openmc.Cell(region=-z_torus)])
+        to_cubit_journal(g, world=(500, 500, 500), filename='z_torus.jou')

@@ -358,7 +358,7 @@ class CADZCone(CADSurface, openmc.ZCone):
 
 class CADTorus(CADSurface):
 
-    def check_coeefs(self):
+    def check_coeffs(self):
         if self.b != self.c:
             raise ValueError("Only torri with constant minor radii are supported")
 
@@ -369,7 +369,7 @@ class CADTorus(CADSurface):
 class CADXTorus(CADTorus, openmc.XTorus):
 
     def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
-        self.check_coeefs()
+        self.check_coeffs()
         cad_cmds = []
         cad_cmds.append( f"torus major radius {self.a} minor radius {self.b}" )
         ids = emit_get_last_id(ent_type, cad_cmds)
@@ -389,6 +389,7 @@ class CADXTorus(CADTorus, openmc.XTorus):
 class CADYTorus(CADTorus, openmc.YTorus):
 
     def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        self.check_coeffs()
         cad_cmds = []
         cad_cmds.append( f"torus major radius {self.a} minor radius {self.b}" )
         ids = emit_get_last_id(ent_type, cad_cmds)
@@ -407,6 +408,7 @@ class CADYTorus(CADTorus, openmc.YTorus):
 class CADZTorus(CADTorus, openmc.ZTorus):
 
     def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        self.check_coeffs()
         cad_cmds = []
         cad_cmds.append( f"torus major radius {self.a} minor radius {self.b}" )
         ids = emit_get_last_id(ent_type, cad_cmds)
@@ -419,3 +421,8 @@ class CADZTorus(CADTorus, openmc.ZTorus):
         else:
             move(ids, self.x0, self.y0, self.z0, cad_cmds)
         return ids, cad_cmds
+
+
+_CAD_SURFACES = [CADPlane, CADXPlane, CADYPlane, CADZPlane, CADCylinder, CADXCylinder, CADYCylinder, CADZCylinder, CADSphere, CADXCone, CADYCone, CADZCone, CADXTorus, CADYTorus, CADZTorus]
+
+_CAD_SURFACE_DICTIONARY = {s._type: s for s in _CAD_SURFACES}

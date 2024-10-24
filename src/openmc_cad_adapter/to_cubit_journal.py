@@ -22,27 +22,7 @@ from .gqs import characterize_general_quadratic
 from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable
 from .geom_util import rotate, move
 
-from .surfaces import (CADPlane, CADXPlane, CADYPlane, CADZPlane,
-                       CADCylinder, CADXCylinder, CADYCylinder, CADZCylinder,
-                       CADSphere, CADXCone, CADYCone, CADZCone, CADXTorus, CADYTorus, CADZTorus)
-
-
-_SURFACE_DICTIONARY = { 'plane': CADPlane,
-                        'x-plane': CADXPlane,
-                        'y-plane': CADYPlane,
-                        'z-plane': CADZPlane,
-                        'cylinder': CADCylinder,
-                        'x-cylinder': CADXCylinder,
-                        'y-cylinder': CADYCylinder,
-                        'z-cylinder': CADZCylinder,
-                        'sphere': CADSphere,
-                        'x-cone': CADXCone,
-                        'y-cone': CADYCone,
-                        'z-cone': CADZCone,
-                        'x-torus': CADXTorus,
-                        'y-torus': CADYTorus,
-                        'z-torus': CADZTorus,
-                      }
+from .surfaces import _CAD_SURFACE_DICTIONARY
 
 def flatten(S):
     if S == []:
@@ -135,8 +115,8 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                 def reverse():
                     return "reverse" if node.side == '-' else ""
 
-                if surface._type in _SURFACE_DICTIONARY:
-                    cad_surface = _SURFACE_DICTIONARY[surface._type].from_openmc_surface(surface)
+                if cad_surface := _CAD_SURFACE_DICTIONARY.get(surface._type):
+                    cad_surface = cad_surface.from_openmc_surface(surface)
                     ids, cad_cmds = cad_surface.to_cubit_surface(ent_type, node, w, inner_world, hex)
                     cmds += cad_cmds
                     return ids
@@ -631,3 +611,8 @@ def openmc_to_cad():
         sys.path.append(args.cubit_path)
 
     to_cubit_journal(model.geometry, world=args.world_size, filename=args.output, cells=args.cells, to_cubit=args.to_cubit)
+
+
+__all__ = ['CADPlane', 'CADXPlane', 'CADYPlane', 'CADZPlane',
+           'CADCylinder', 'CADXCylinder', 'CADYCylinder', 'CADZCylinder',
+           'CADSphere', 'CADXCone', 'CADYCone', 'CADZCone', 'CADXTorus', 'CADYTorus', 'CADZTorus']
