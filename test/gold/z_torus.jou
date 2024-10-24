@@ -1,0 +1,8 @@
+set graphics off
+set journal off
+#CELL 9
+torus major radius 5.0 minor radius 2.0
+#{ id1 = Id("body") }
+body { id1 } move 50.0 50.0 50.0
+body { id1 } name "Cell_9"
+group "mat:void" add body { id1 } 

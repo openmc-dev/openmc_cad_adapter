@@ -49,3 +49,24 @@ def test_z_cone(request):
     g = openmc.Geometry([openmc.Cell(region=-z_cone)])
     to_cubit_journal(g, world=(500, 500, 500), filename='z_cone.jou')
     diff_gold_file('z_cone.jou')
+
+
+def test_x_torus(request):
+    x_torus = openmc.XTorus(x0=10.0, y0=10.0, z0=10.0, a=5.0, b=2.0, c=2.0)
+    g = openmc.Geometry([openmc.Cell(region=-x_torus)])
+    to_cubit_journal(g, world=(500, 500, 500), filename='x_torus.jou')
+    diff_gold_file('x_torus.jou')
+
+
+def test_y_torus(request):
+    y_torus = openmc.YTorus(x0=-10.0, y0=-10.0, z0=-10.0, a=5.0, b=2.0, c=2.0)
+    g = openmc.Geometry([openmc.Cell(region=-y_torus)])
+    to_cubit_journal(g, world=(500, 500, 500), filename='y_torus.jou')
+    diff_gold_file('y_torus.jou')
+
+
+def test_z_torus(request):
+    z_torus = openmc.ZTorus(x0=50.0, y0=50.0, z0=50.0, a=5.0, b=2.0, c=2.0)
+    g = openmc.Geometry([openmc.Cell(region=-z_torus)])
+    to_cubit_journal(g, world=(500, 500, 500), filename='z_torus.jou')
+    diff_gold_file('z_torus.jou')
