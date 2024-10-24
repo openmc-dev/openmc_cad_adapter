@@ -37,7 +37,7 @@ def generate_example_xml(example):
 
 
 @pytest.mark.parametrize("example", examples, ids=example_name)
-def test_examples(example, request):
+def test_examples(example, request, run_in_tmpdir):
 
     openmc.reset_auto_ids()
     generate_example_xml(example)
@@ -53,7 +53,7 @@ def test_examples(example, request):
     diff_files(output, gold_file)
 
 
-def test_cell_by_cell_conversion(request):
+def test_cell_by_cell_conversion(request, run_in_tmpdir):
     openmc.reset_auto_ids()
     exec(open(OPENMC_EXAMPLES_DIR / "pincell/build_xml.py").read())
 
@@ -73,7 +73,7 @@ def test_cell_by_cell_conversion(request):
 
 
 @pytest.mark.parametrize("example", examples, ids=example_name)
-def test_examples_cli(example, request):
+def test_examples_cli(example, request, run_in_tmpdir):
 
     openmc.reset_auto_ids()
     generate_example_xml(example)
