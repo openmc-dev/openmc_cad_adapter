@@ -289,3 +289,68 @@ class CADSphere(CADSurface, openmc.Sphere):
     @classmethod
     def from_openmc_surface_inner(cls, sphere):
         return cls(r=sphere.r, x0=sphere.x0, y0=sphere.y0, z0=sphere.z0, boundary_type=sphere.boundary_type, albedo=sphere.albedo, name=sphere.name, surface_id=sphere.id)
+
+
+class CADXCone(CADSurface, openmc.XCone):
+
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        cad_cmds = []
+        cad_cmds.append( f"create frustum height {extents[0]} radius {math.sqrt(self.coefficients['r2']*extents[0])} top 0")
+        ids = emit_get_last_id( ent_type , cad_cmds)
+        cad_cmds.append( f"rotate body {{ {ids} }} about y angle 90")
+        if node.side != '-':
+            cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+            wid = emit_get_last_id( ent_type , cad_cmds)
+            cad_cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
+            move(wid, self.coefficients['x0'], self.coefficients['y0'], self.coefficients['z0'], cad_cmds)
+            ids = wid
+        else:
+            move(ids, self.coefficients['x0'], self.coefficients['y0'], self.coefficients['z0'], cad_cmds)
+        return ids, cad_cmds
+
+    @classmethod
+    def from_openmc_surface_inner(cls, surface):
+        return cls(x0=surface.x0, y0=surface.y0, z0=surface.z0, r2=surface.r2, boundary_type=surface.boundary_type, albedo=surface.albedo, name=surface.name, surface_id=surface.id)
+
+
+class CADYCone(CADSurface, openmc.YCone):
+
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        cad_cmds = []
+        cad_cmds.append( f"create frustum height {extents[1]} radius {math.sqrt(self.coefficients['r2']*extents[1])} top 0")
+        ids = emit_get_last_id(ent_type, cad_cmds)
+        cad_cmds.append( f"rotate body {{ {ids} }} about x angle 90")
+        if node.side != '-':
+            cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+            wid = emit_get_last_id(ent_type, cad_cmds)
+            cad_cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
+            move(wid, self.coefficients['x0'], self.coefficients['y0'], self.coefficients['z0'], cad_cmds)
+            ids = wid
+        else:
+            move(ids, self.coefficients['x0'], self.coefficients['y0'], self.coefficients['z0'], cad_cmds)
+        return ids, cad_cmds
+
+    @classmethod
+    def from_openmc_surface_inner(cls, surface):
+        return cls(x0=surface.x0, y0=surface.y0, z0=surface.z0, r2=surface.r2, boundary_type=surface.boundary_type, albedo=surface.albedo, name=surface.name, surface_id=surface.id)
+
+
+class CADZCone(CADSurface, openmc.ZCone):
+
+    def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
+        cad_cmds = []
+        cad_cmds.append( f"create frustum height {extents[2]} radius {math.sqrt(self.coefficients['r2']*extents[2])} top 0")
+        ids = emit_get_last_id(ent_type, cad_cmds)
+        if node.side != '-':
+            cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+            wid = emit_get_last_id(ent_type , cad_cmds)
+            cad_cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
+            move(wid, self.coefficients['x0'], self.coefficients['y0'], self.coefficients['z0'], cad_cmds)
+            ids = wid
+        else:
+            move(ids, self.coefficients['x0'], self.coefficients['y0'], self.coefficients['z0'], cad_cmds)
+        return ids, cad_cmds
+
+    @classmethod
+    def from_openmc_surface_inner(cls, surface):
+        return cls(x0=surface.x0, y0=surface.y0, z0=surface.z0, r2=surface.r2, boundary_type=surface.boundary_type, albedo=surface.albedo, name=surface.name, surface_id=surface.id)

@@ -24,7 +24,7 @@ from .geom_util import rotate, move
 
 from .surfaces import (CADPlane, CADXPlane, CADYPlane, CADZPlane,
                        CADCylinder, CADXCylinder, CADYCylinder, CADZCylinder,
-                       CADSphere)
+                       CADSphere, CADXCone, CADYCone)
 
 
 _SURFACE_DICTIONARY = { 'plane': CADPlane,
@@ -35,7 +35,9 @@ _SURFACE_DICTIONARY = { 'plane': CADPlane,
                         'x-cylinder': CADXCylinder,
                         'y-cylinder': CADYCylinder,
                         'z-cylinder': CADZCylinder,
-                        'sphere': CADSphere
+                        'sphere': CADSphere,
+                        'x-cone': CADXCone,
+                        'y-cone': CADYCone,
                       }
 
 def flatten(S):
@@ -134,49 +136,9 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     ids, cad_cmds = cad_surface.to_cubit_surface(ent_type, node, w, inner_world, hex)
                     cmds += cad_cmds
                     return ids
-                elif surface._type == "sphere":
-                    cmds.append( f"sphere redius {surface.coefficients['r']}")
-                    ids = emit_get_last_id(ent_type, cmds)
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                    pass
                 elif surface._type == "cone":
                     raise NotImplementedError("cone not implemented")
                     pass
-                elif surface._type == "x-cone":
-                    cmds.append( f"create frustum height {w[0]} radius {math.sqrt(surface.coefficients['r2']*w[0])} top 0")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    cmds.append( f"rotate body {{ {ids} }} about y angle 90")
-                    if node.side != '-':
-                        cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type , cmds)
-                        cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
-                        move(wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                        return wid
-                    move(ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds)
-                    return ids
-                elif surface._type == "y-cone":
-                    cmds.append( f"create frustum height {w[1]} radius {math.sqrt(surface.coefficients['r2']*w[1])} top 0")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    cmds.append( f"rotate body {{ {ids} }} about x angle 90")
-                    if node.side != '-':
-                        cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type , cmds)
-                        cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
-                        return wid
-                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
-                    return ids
-                elif surface._type == "z-cone":
-                    cmds.append( f"create frustum height {w[2]} radius {math.sqrt(surface.coefficients['r2']*w[2])} top 0")
-                    ids = emit_get_last_id( ent_type , cmds)
-                    if node.side != '-':
-                        cmds.append( f"brick x {w[0]} y {w[1]} z {w[2]}" )
-                        wid = emit_get_last_id( ent_type , cmds)
-                        cmds.append( f"subtract body {{ {ids} }} from body {{ {wid} }}" )
-                        move( wid, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
-                        return wid
-                    move( ids, surface.coefficients['x0'], surface.coefficients['y0'], surface.coefficients['z0'], cmds )
-                    return ids
                 elif surface._type == "x-torus":
                     cmds.append( f"torus major radius {surface.coefficients['a']} minor radius {surface.coefficients['b']}")
                     ids = emit_get_last_id( ent_type , cmds)
