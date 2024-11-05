@@ -63,9 +63,8 @@ class CADPlane(CADSurface, openmc.Plane):
         ns = cd * n
 
         cmds.append( f"create surface rectangle width  { 2*extents[0] } zplane")
-        sur, cmd = emit_get_last_id( "surface" )
-        cmds.append(cmd)
-        surf, cmd = emit_get_last_id( "body" )
+        sur = emit_get_last_id("surface", cmds)
+        surf = emit_get_last_id("body", cmds)
 
         n = n/np.linalg.norm(n)
         ns = cd * n
@@ -81,7 +80,7 @@ class CADPlane(CADSurface, openmc.Plane):
             cmds.append(f"Rotate body {{ {surf} }} about 0 0 0 direction {n3[0]} {n3[1]} {n3[2]} Angle {angle}")
         cmds.append(f"body {{ { surf } }} move {ns[0]} {ns[1]} {ns[2]}")
         cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
-        ids = emit_get_last_id( ent_type )
+        ids = emit_get_last_id( ent_type, cmds)
         cmds.append(f"section body {{ {ids} }} with surface {{ {sur} }} {self.lreverse(node)}")
         cmds.append(f"del surface {{ {sur} }}")
 
@@ -90,7 +89,7 @@ class CADPlane(CADSurface, openmc.Plane):
 
     @classmethod
     def from_openmc_surface_inner(cls, plane):
-        return cls(plane.a, plane.b, plane.c, plane.d, plane.boundary_type, plane.albedo, plane.name, plane.id)
+        return cls(a=plane.a, b=plane.b, c=plane.c, d=plane.d, boundary_type=plane.boundary_type, albedo=plane.albedo, name=plane.name, surface_id=plane.id)
 
 
 class CADXPlane(CADSurface, openmc.XPlane):
