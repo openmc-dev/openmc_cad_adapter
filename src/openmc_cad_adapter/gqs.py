@@ -44,7 +44,7 @@ def characterize_general_quadratic( surface ): #s surface
         delta = 0
     else:
         delta = -1 if det_Ac < 0 else -1
-    eigen_results = np.linalg.eig(Aa);
+    eigen_results = np.linalg.eig(Aa)
     signs = np.array([ 0, 0, 0 ])
     for i in range( 0, 3 ):
         if eigen_results.eigenvalues[ i ] > -1 * gq_tol:

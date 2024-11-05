@@ -281,7 +281,7 @@ class CADSphere(CADSurface, openmc.Sphere):
 
     def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
-        cad_cmds.append( f"sphere redius {self.r}")
+        cad_cmds.append( f"sphere radius {self.r}")
         ids = emit_get_last_id(ent_type, cad_cmds)
         move(ids, self.x0, self.y0, self.z0, cad_cmds)
         return ids, cad_cmds
