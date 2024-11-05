@@ -7,9 +7,19 @@ from .test_utilities import diff_gold_file
 from test import run_in_tmpdir
 
 
+def test_planes(request, run_in_tmpdir):
+    plane1 = openmc.Plane(A=1.0, B=1.0, C=0.0, D=-5.0)
+    plane2 = openmc.Plane(A=1.0, B=1.0, C=0.0, D=5.0)
+    plane3 = openmc.Plane(A=0.0, B=1.0, C=1.0, D=-5.0)
+    plane4 = openmc.Plane(A=0.0, B=1.0, C=1.0, D=5.0)
+    plane5 = openmc.Plane(A=1.0, B=0.0, C=1.0, D=-5.0)
+    plane6 = openmc.Plane(A=1.0, B=0.0, C=1.0, D=5.0)
+    g = openmc.Geometry([openmc.Cell(region=+plane1 & -plane2 & +plane3 & -plane4 & +plane5 & -plane6)])
+    to_cubit_journal(g, world=(500, 500, 500), filename='plane.jou')
+    diff_gold_file('plane.jou')
+
 # Test the XCylinder and YCylinder classes, the ZCylinder surface is tested
 # extensively in the OpenMC example tests
-
 def test_xcylinder(request, run_in_tmpdir):
     x_cyl = openmc.XCylinder(r=1.0, y0=10.0, z0=5.0)
     g = openmc.Geometry([openmc.Cell(region=-x_cyl)])
