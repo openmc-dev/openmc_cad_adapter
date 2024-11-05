@@ -83,7 +83,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                                ' Please provide a world size argument to proceed')
         # to ensure that the box
         box_max = np.max(np.abs(bbox[0], bbox[1]).T)
-        world_size = (2 * box_max, 2 * box_max, 2 * box_max)
+        world = (2 * box_max, 2 * box_max, 2 * box_max)
 
     if world is None:
         raise RuntimeError("Model extents could not be determined automatically and must be provided manually")
