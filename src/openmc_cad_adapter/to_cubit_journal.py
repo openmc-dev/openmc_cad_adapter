@@ -122,19 +122,19 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                     (gq_type, A_, B_, C_, K_, translation, rotation_matrix) = characterize_general_quadratic(surface)
 
                     def rotation_to_axis_angle( mat ):
-                        x = mat[2, 1]-mat[1, 2];
-                        y = mat[0, 2]-mat[2, 0];
-                        z = mat[1, 0]-mat[0, 1];
-                        r = math.hypot( x, math.hypot( y,z ));
-                        t = mat[0,0] + mat[1,1] + mat[2,2];
-                        theta = math.atan2(r,t-1);
+                        x = mat[2, 1]-mat[1, 2]
+                        y = mat[0, 2]-mat[2, 0]
+                        z = mat[1, 0]-mat[0, 1]
+                        r = math.hypot( x, math.hypot( y,z ))
+                        t = mat[0,0] + mat[1,1] + mat[2,2]
+                        theta = math.atan2(r,t-1)
 
                         if abs(theta) <= np.finfo(np.float64).eps:
                             return ( np.array([ 0, 0, 0 ]), 0 )
                         elif abs( theta - math.pi ) <= np.finfo(np.float64).eps:
                           # theta is pi (180 degrees) or extremely close to it
                           # find the column of mat with the largest diagonal
-                          col = 0;
+                          col = 0
                           if mat[1,1] > mat[col,col]: col = 1
                           if mat[2,2] > mat[col,col]: col = 2
 
@@ -403,48 +403,48 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                                 y_pos = 0
                                 r = ring_id
                                 for i in range( r, 0, -1 ):
-                                    x_pos = x * center_to_mid_side_diameter;
-                                    y_pos = ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter;
+                                    x_pos = x * center_to_mid_side_diameter
+                                    y_pos = ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter
                                     for n, cell in us[k]._cells.items():
                                         draw_hex_cell( n, cell, x_pos, y_pos )
                                     #print( r, k, x, x_pos, y_pos )
                                     k = k + 1
                                     x = x + 1
-                                y_pos = ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter;
+                                y_pos = ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter
                                 for i in range( r, 0, -1 ):
-                                    x_pos = x * center_to_mid_side_diameter;
+                                    x_pos = x * center_to_mid_side_diameter
                                     for n, cell in us[k]._cells.items():
                                         draw_hex_cell( n, cell, x_pos, y_pos )
                                     #print( r, k, x, x_pos, y_pos )
-                                    y_pos = y_pos - side_to_side_diameter;
+                                    y_pos = y_pos - side_to_side_diameter
                                     k = k + 1
                                 for i in range( r, 0, -1 ):
-                                    x_pos = x * center_to_mid_side_diameter;
-                                    y_pos = - ring_id * side_to_side_diameter + ( x ) * 0.5 * side_to_side_diameter;
-                                    for n, cell in us[k]._cells.items():
-                                        draw_hex_cell( n, cell, x_pos, y_pos )
-                                    #print( r, k, x, x_pos, y_pos )
-                                    k = k + 1
-                                    x = x - 1
-                                for i in range( r, 0, -1 ):
-                                    x_pos = x * center_to_mid_side_diameter;
-                                    y_pos = - ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter;
+                                    x_pos = x * center_to_mid_side_diameter
+                                    y_pos = - ring_id * side_to_side_diameter + ( x ) * 0.5 * side_to_side_diameter
                                     for n, cell in us[k]._cells.items():
                                         draw_hex_cell( n, cell, x_pos, y_pos )
                                     #print( r, k, x, x_pos, y_pos )
                                     k = k + 1
                                     x = x - 1
-                                y_pos = - ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter;
                                 for i in range( r, 0, -1 ):
-                                    x_pos = x * center_to_mid_side_diameter;
+                                    x_pos = x * center_to_mid_side_diameter
+                                    y_pos = - ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter
                                     for n, cell in us[k]._cells.items():
                                         draw_hex_cell( n, cell, x_pos, y_pos )
                                     #print( r, k, x, x_pos, y_pos )
-                                    y_pos = y_pos + side_to_side_diameter;
+                                    k = k + 1
+                                    x = x - 1
+                                y_pos = - ring_id * side_to_side_diameter - ( x ) * 0.5 * side_to_side_diameter
+                                for i in range( r, 0, -1 ):
+                                    x_pos = x * center_to_mid_side_diameter
+                                    for n, cell in us[k]._cells.items():
+                                        draw_hex_cell( n, cell, x_pos, y_pos )
+                                    #print( r, k, x, x_pos, y_pos )
+                                    y_pos = y_pos + side_to_side_diameter
                                     k = k + 1
                                 for i in range( r, 0, -1 ):
-                                    x_pos = x * center_to_mid_side_diameter;
-                                    y_pos = ring_id * side_to_side_diameter + ( x ) * 0.5 * side_to_side_diameter;
+                                    x_pos = x * center_to_mid_side_diameter
+                                    y_pos = ring_id * side_to_side_diameter + ( x ) * 0.5 * side_to_side_diameter
                                     for n, cell in us[k]._cells.items():
                                         draw_hex_cell( n, cell, x_pos, y_pos )
                                     #print( r, k, x, x_pos, y_pos )
