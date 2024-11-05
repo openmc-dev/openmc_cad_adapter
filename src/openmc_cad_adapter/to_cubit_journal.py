@@ -156,7 +156,7 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
                             r1 = math.sqrt( abs( -K_/A_ ) )
                             r2 = math.sqrt( abs( -K_/B_ ) )
                             r3 = math.sqrt( abs( -K_/C_ ) )
-                            cmds.append( f"sphere redius 1")
+                            cmds.append( f"sphere radius 1")
                             ids = emit_get_last_id( ent_type , cmds)
                             cmds.append( f"body {{ { ids } }} scale x { r1 } y { r2 } z { r3 }")
                             move( ids, translation[0,0], translation[1,0], translation[2,0], cmds)
