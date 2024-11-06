@@ -95,7 +95,7 @@ def characterize_general_quadratic( surface ): #s surface
         elif 2 == rAa and 3 == rAc and 1 == S and D != 0 :
             return find_type( rAa, rAc, D, S, 0 )
         else:
-            raise "UNKNOWN QUADRATIC"
+            raise RuntimeError("UNKNOWN QUADRATIC")
 
     gq_type = find_type( rank_Aa, rank_Ac, delta, S, D )
 
