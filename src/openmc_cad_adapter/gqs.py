@@ -117,20 +117,32 @@ def characterize_general_quadratic( surface ): #s surface
     if gq_type == ONE_SHEET_HYPERBOLOID:
         if abs( K_) < equivalence_tol:
            K_ = 0
-           return ELLIPTIC_CONE
+           gq_type = ELLIPTIC_CONE
     if gq_type == TWO_SHEET_HYPERBOLOID:
         if abs( K_) < equivalence_tol:
            K_ = 0
-           return ELLIPTIC_CONE
+           gq_type = ELLIPTIC_CONE
     if gq_type == ELLIPSOID:
         if abs( A_) < equivalence_tol:
            A_ = 0
-           return ELLIPTIC_CYLINDER
+           gq_type = ELLIPTIC_CYLINDER
         elif abs( B_) < equivalence_tol:
            B_ = 0
-           return ELLIPTIC_CYLINDER
+           gq_type = ELLIPTIC_CYLINDER
         elif abs( C_) < equivalence_tol:
            C_ = 0
-           return ELLIPTIC_CYLINDER
-    else:
-        return (gq_type, A_, B_, C_, K_, translation, rotation_matrix)
+           gq_type = ELLIPTIC_CYLINDER
+
+    return (gq_type, A_, B_, C_, K_, translation, rotation_matrix)
+
+
+__all__ = ["characterize_general_quadratic",
+           "ELLIPSOID",
+           "ONE_SHEET_HYPERBOLOID",
+           "TWO_SHEET_HYPERBOLOID",
+           "ELLIPTIC_CONE",
+           "ELLIPTIC_PARABOLOID",
+           "HYPERBOLIC_PARABOLOID",
+           "ELLIPTIC_CYLINDER",
+           "HYPERBOLIC_CYLINDER",
+           "PARABOLIC_CYLINDER"]

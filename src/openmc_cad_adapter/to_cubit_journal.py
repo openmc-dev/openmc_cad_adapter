@@ -6,7 +6,6 @@ from pathlib import Path
 import sys
 import warnings
 
-from numpy.linalg import matrix_rank
 import numpy as np
 
 try:
@@ -18,18 +17,7 @@ from openmc.region import Region, Complement, Intersection, Union
 from openmc.surface import Halfspace, Quadric
 from openmc.lattice import Lattice, HexLattice
 
-from .gqs import (
-    characterize_general_quadratic,
-    ELLIPSOID,
-    ONE_SHEET_HYPERBOLOID,
-    TWO_SHEET_HYPERBOLOID,
-    ELLIPTIC_CONE,
-    ELLIPTIC_PARABOLOID,
-    HYPERBOLIC_PARABOLOID,
-    ELLIPTIC_CYLINDER,
-    HYPERBOLIC_CYLINDER,
-    PARABOLIC_CYLINDER
-)
+from .gqs import *
 from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable
 from .geom_util import rotate, move
 from .cubit_util import emit_get_last_id, reset_cubit_ids, new_variable

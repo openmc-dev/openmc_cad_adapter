@@ -122,3 +122,10 @@ def test_general_cone(request, run_in_tmpdir):
         cone = openmc.Cone(x0=0.0, y0=0.0, z0=0.0, r2=6.0, dx=1, dy=1, dz=1)
         g = openmc.Geometry([openmc.Cell(region=-cone)])
         to_cubit_journal(g, world=(500, 500, 500), filename='cone.jou')
+
+@reset_openmc_ids
+def test_gq_ellipsoid(request):
+    ellipsoid = openmc.Quadric(1, 2, 3, k=1)
+    g = openmc.Geometry([openmc.Cell(region=-ellipsoid)])
+    to_cubit_journal(g, world=(500, 500, 500), filename='ellipsoid.jou')
+    diff_gold_file('ellipsoid.jou')

@@ -1,0 +1,19 @@
+set echo off
+set info off
+set warning off
+graphics pause
+set journal off
+set default autosize off
+#CELL 1
+sphere radius 1
+#{ id1 = Id("body") }
+body { id1 } scale x 1.0 y 0.7071067811865476 z 0.5773502691896257
+body { None } name "Cell_1"
+group "mat:void" add body { None } 
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on
