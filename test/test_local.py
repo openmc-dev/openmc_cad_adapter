@@ -128,3 +128,4 @@ def test_gq_ellipsoid(request):
     ellipsoid = openmc.Quadric(1, 2, 3, k=1)
     g = openmc.Geometry([openmc.Cell(region=-ellipsoid)])
     to_cubit_journal(g, world=(500, 500, 500), filename='ellipsoid.jou')
+    diff_gold_file('ellipsoid.jou')
