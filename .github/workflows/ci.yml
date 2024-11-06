@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  name: CI
   main:
     runs-on: ubuntu-latest
     defaults:
