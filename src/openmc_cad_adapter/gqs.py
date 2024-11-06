@@ -1,5 +1,5 @@
 import numpy as np
-
+from numpy.linalg import matrix_rank
 
 ELLIPSOID = 1
 ONE_SHEET_HYPERBOLOID = 2
