@@ -23,12 +23,12 @@ def reset_openmc_ids(func):
 
 @reset_openmc_ids
 def test_planes(request, run_in_tmpdir):
-    plane1 = openmc.Plane(A=1.0, B=1.0, C=0.0, D=-5.0)
-    plane2 = openmc.Plane(A=1.0, B=1.0, C=0.0, D=5.0)
-    plane3 = openmc.Plane(A=0.0, B=1.0, C=1.0, D=-5.0)
-    plane4 = openmc.Plane(A=0.0, B=1.0, C=1.0, D=5.0)
-    plane5 = openmc.Plane(A=1.0, B=0.0, C=1.0, D=-5.0)
-    plane6 = openmc.Plane(A=1.0, B=0.0, C=1.0, D=5.0)
+    plane1 = openmc.Plane(a=1.0, b=1.0, c=0.0, d=-5.0)
+    plane2 = openmc.Plane(a=1.0, b=1.0, c=0.0, d=5.0)
+    plane3 = openmc.Plane(a=0.0, b=1.0, c=1.0, d=-5.0)
+    plane4 = openmc.Plane(a=0.0, b=1.0, c=1.0, d=5.0)
+    plane5 = openmc.Plane(a=1.0, b=0.0, c=1.0, d=-5.0)
+    plane6 = openmc.Plane(a=1.0, b=0.0, c=1.0, d=5.0)
     g = openmc.Geometry([openmc.Cell(region=+plane1 & -plane2 & +plane3 & -plane4 & +plane5 & -plane6)])
     to_cubit_journal(g, world=(500, 500, 500), filename='plane.jou')
     diff_gold_file('plane.jou')
