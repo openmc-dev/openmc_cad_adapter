@@ -4,12 +4,12 @@ set warning off
 graphics pause
 set journal off
 set default autosize off
-#CELL 5
+#CELL 1
 create frustum height 500 radius 31.622776601683793 top 0
 #{ id1 = Id("body") }
 rotate body { id1 } about x angle 90
 body { id1 } move 40.0 20.0 7.0
-body { id1 } name "Cell_5"
+body { id1 } name "Cell_1"
 group "mat:void" add body { id1 } 
 graphics flush
 set default autosize on
