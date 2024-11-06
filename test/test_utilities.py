@@ -12,9 +12,9 @@ def diff_files(test_output, gold_file):
         shutil.copy(test_output, gold_file)
 
     if not filecmp.cmp(test_output, gold_file):
-        print(''.join(difflib.unified_diff(open(test_output, 'r').readlines(),
-                                           open(gold_file, 'r').readlines())))
-        raise RuntimeError(f'{test_output} and {gold_file} are different')
+        print(''.join(difflib.unified_diff(open(gold_file, 'r').readlines(),
+                                           open(test_output, 'r').readlines())))
+        raise RuntimeError(f'{gold_file} and {test_output} are different')
 
 
 def diff_gold_file(gold_file, request=None):

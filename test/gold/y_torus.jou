@@ -4,12 +4,12 @@ set warning off
 graphics pause
 set journal off
 set default autosize off
-#CELL 8
+#CELL 1
 torus major radius 5.0 minor radius 2.0
 #{ id1 = Id("body") }
 rotate body { id1 } about x angle 90
 body { id1 } move -10.0 -10.0 -10.0
-body { id1 } name "Cell_8"
+body { id1 } name "Cell_1"
 group "mat:void" add body { id1 } 
 graphics flush
 set default autosize on
