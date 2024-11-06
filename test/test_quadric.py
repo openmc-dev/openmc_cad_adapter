@@ -6,6 +6,7 @@ import openmc
 from openmc_cad_adapter import to_cubit_journal
 from openmc_cad_adapter.gqs import *
 
+
 def test_ellipsoid_classification():
     # ELLIPSOID
     testEllip = openmc.Quadric(1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
