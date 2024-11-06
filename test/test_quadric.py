@@ -15,49 +15,49 @@ def test_ellipsoid_classification():
 
 def test_one_sheet_hyperboloid_classification():
     # ONE_SHEET_HYPERBOLOID
-    testOneSheet = openmc.Quadric(1.0, 1.0, -1.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
+    testOneSheet = openmc.Quadric(1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
     quadric_type, A, B, C, K, _, _ = characterize_general_quadratic(testOneSheet)
     assert quadric_type == ONE_SHEET_HYPERBOLOID
 
 
 def test_two_sheet_hyperboloid_classification():
     # TWO_SHEET_HYPERBOLOID
-    testTwoSheet = openmc.Quadric(-1.0, -1.0, 1.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
+    testTwoSheet = openmc.Quadric(-1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
     quadric_type, A, B, C, K, _, _ = characterize_general_quadratic(testTwoSheet)
     assert quadric_type == TWO_SHEET_HYPERBOLOID
 
 
 def test_elliptic_cone_classification():
     # ELLIPTIC_CONE
-    testEllCone = openmc.Quadric(1.0, 1.0, -1.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    testEllCone = openmc.Quadric(1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     quadric_type, A, B, C, K, _, _ = characterize_general_quadratic(testEllCone)
     assert quadric_type == ELLIPTIC_CONE
 
 
 def test_elliptic_paraboloid_classification():
     # ELLIPTIC_PARABOLOID
-    testEllPara = openmc.Quadric(1.0, 1.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0)
+    testEllPara = openmc.Quadric(1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0)
     quadric_type, A, B, C, K, _, _ = characterize_general_quadratic(testEllPara)
     assert quadric_type == ELLIPTIC_PARABOLOID
 
 
 def test_hyperbolic_paraboloid_classification():
     # HYPERBOLIC_PARABOLOID
-    testHypPara = openmc.Quadric(1.0, -1.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0)
+    testHypPara = openmc.Quadric(1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0)
     quadric_type, A, B, C, K, _, _ = characterize_general_quadratic(testHypPara)
     assert quadric_type == HYPERBOLIC_PARABOLOID
 
 
 def test_elliptic_cyl_classification():
     # ELLIPTIC_CYL
-    testEllCyl = openmc.Quadric(1.0, 1.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
+    testEllCyl = openmc.Quadric(1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
     quadric_type, A, B, C, K, _, _ = characterize_general_quadratic(testEllCyl)
     assert quadric_type == ELLIPTIC_CYLINDER
 
 
 def test_hyperbolic_cyl_classification():
     # HYPERBOLIC_CYL
-    testHypCyl = openmc.Quadric(1.0, -1.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+    testHypCyl = openmc.Quadric(1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
     quadric_type, A, B, C, K, _, _ = characterize_general_quadratic(testHypCyl)
     assert quadric_type == HYPERBOLIC_CYLINDER
 
