@@ -1,0 +1,28 @@
+set echo off
+set info off
+set warning off
+graphics pause
+set journal off
+set default autosize off
+#CELL 4
+sphere radius 30.0
+#{ id1 = Id("body") }
+body { id1 } name "Cell_4"
+group "mat:void" add body { id1 } 
+#CELL 3
+sphere radius 20.0
+#{ id2 = Id("body") }
+body { id2 } name "Cell_3"
+group "mat:void" add body { id2 } 
+#CELL 2
+sphere radius 10.0
+#{ id3 = Id("body") }
+body { id3 } name "Cell_2"
+group "mat:void" add body { id3 } 
+graphics flush
+set default autosize on
+zoom reset
+set echo on
+set info on
+set warning on
+set journal on

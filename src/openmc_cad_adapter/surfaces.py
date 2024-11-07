@@ -283,6 +283,11 @@ class CADSphere(CADSurface, openmc.Sphere):
         cad_cmds.append( f"sphere radius {self.r}")
         ids = emit_get_last_id(ent_type, cad_cmds)
         move(ids, self.x0, self.y0, self.z0, cad_cmds)
+        if node.side != '-':
+            cad_cmds.append( f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+            wid = emit_get_last_id( ent_type , cad_cmds)
+            cad_cmds.append(f"subtract body {{ {ids} }} from body {{ {wid} }}")
+            ids = wid
         return ids, cad_cmds
 
     @classmethod
