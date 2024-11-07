@@ -42,7 +42,7 @@ def test_nested_spheres(request, run_in_tmpdir):
 
     inner_cell = openmc.Cell(region=-inner_sphere)
     middle_cell = openmc.Cell(region=-middle_sphere)
-    outer_cell = openmc.Cell(region=-outer_sphere)
+    outer_cell = openmc.Cell(region=+middle_sphere & -outer_sphere)
 
     g = openmc.Geometry([outer_cell, middle_cell, inner_cell])
     to_cubit_journal(g, world=(500, 500, 500), filename='nested_spheres.jou')
