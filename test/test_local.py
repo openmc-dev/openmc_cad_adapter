@@ -34,6 +34,21 @@ def test_planes(request, run_in_tmpdir):
     diff_gold_file('plane.jou')
 
 
+@reset_openmc_ids
+def test_nested_spheres(request, run_in_tmpdir):
+    inner_sphere = openmc.Sphere(r=10.0)
+    middle_sphere = openmc.Sphere(r=20.0)
+    outer_sphere = openmc.Sphere(r=30.0)
+
+    inner_cell = openmc.Cell(region=-inner_sphere)
+    middle_cell = openmc.Cell(region=+inner_sphere & -middle_sphere)
+    outer_cell = openmc.Cell(region=+middle_sphere & -outer_sphere)
+
+    g = openmc.Geometry([outer_cell, middle_cell, inner_cell])
+    to_cubit_journal(g, world=(500, 500, 500), filename='nested_spheres.jou')
+    diff_gold_file('nested_spheres.jou')
+
+
 # Test the XCylinder and YCylinder classes, the ZCylinder surface is tested
 # extensively in the OpenMC example tests
 @reset_openmc_ids
