@@ -41,7 +41,7 @@ def test_nested_spheres(request, run_in_tmpdir):
     outer_sphere = openmc.Sphere(r=30.0)
 
     inner_cell = openmc.Cell(region=-inner_sphere)
-    middle_cell = openmc.Cell(region=-middle_sphere)
+    middle_cell = openmc.Cell(region=+inner_sphere & -middle_sphere)
     outer_cell = openmc.Cell(region=+middle_sphere & -outer_sphere)
 
     g = openmc.Geometry([outer_cell, middle_cell, inner_cell])
