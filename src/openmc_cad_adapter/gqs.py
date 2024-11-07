@@ -27,16 +27,14 @@ def characterize_general_quadratic( surface ): #s surface
     j = surface.coefficients['j']
     k = surface.coefficients['k']
     #coefficient matrix
-    Aa = np.matrix([
-               [a, d/2, f/2],
-               [d/2, b, e/2],
-               [f/2, e/2, c]])
+    Aa = np.asarray([[a, d/2, f/2],
+                     [d/2, b, e/2],
+                     [f/2, e/2, c]])
     #hessian matrix
-    Ac = np.matrix([
-               [a, d/2, f/2, g/2],
-               [d/2, b, e/2, h/2],
-               [f/2, e/2, c, j/2],
-               [g/2, h/2, j/2, k]])
+    Ac = np.asarray([[a, d/2, f/2, g/2],
+                     [d/2, b, e/2, h/2],
+                     [f/2, e/2, c, j/2],
+                     [g/2, h/2, j/2, k]])
     rank_Aa = matrix_rank( Aa )
     rank_Ac = matrix_rank( Ac )
 
@@ -68,7 +66,7 @@ def characterize_general_quadratic( surface ): #s surface
 
     #Update the constant using the resulting translation
     K_ = k + (g/2)*dx + (h/2)*dy + (j/2)*dz
-    K_ = K_[0,0]
+    K_ = K_[0]
 
     if rank_Aa == 2 and rank_Ac == 3 and S == 1:
         delta = -1 if K_ * signs[0] else 1
