@@ -34,6 +34,7 @@ def test_planes(request, run_in_tmpdir):
     diff_gold_file('plane.jou')
 
 
+@reset_openmc_ids
 def test_nested_spheres(request, run_in_tmpdir):
     inner_sphere = openmc.Sphere(r=10.0)
     middle_sphere = openmc.Sphere(r=20.0)
