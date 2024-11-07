@@ -34,7 +34,7 @@ jobs:
       - name: Test examples
         run: |
           micromamba activate test-env
-          OPENMC_EXAMPLES_DIR=$HOME/openmc/examples pytest -v ./test/test_examples.py
+          OPENMC_EXAMPLES_DIR=$HOME/openmc/examples pytest -v ./test
 
       - name: Setup tmate session
         if: ${{ failure() }}
