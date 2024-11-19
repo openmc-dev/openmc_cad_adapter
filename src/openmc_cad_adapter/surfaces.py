@@ -307,13 +307,13 @@ class CADXCone(CADSurface, openmc.XCone):
 
     def to_cubit_surface_inner(self, ent_type, node, extents, inner_world=None, hex=False):
         cad_cmds = []
-        cad_cmds.append( f"create frustum height {extents[1]} radius {math.sqrt(self.coefficients['r2'])*extents[1]} top 0")
+        cad_cmds.append( f"create frustum height {extents[0]} radius {math.sqrt(self.coefficients['r2'])*extents[0]} top 0")
         ids = emit_get_last_id(ent_type, cad_cmds)
-        cad_cmds.append(f"body {{ {ids} }} move 0 0 -{extents[1]/2.0}")
+        cad_cmds.append(f"body {{ {ids} }} move 0 0 -{extents[0]/2.0}")
         cad_cmds.append(f"body {{ {ids} }} copy reflect z")
         ids2 = emit_get_last_id(ent_type, cad_cmds)
         cad_cmds.append(f"unite body {{ {ids} }}  {{ {ids2} }}")
-        cad_cmds.append( f"rotate body {{ {ids} }} about x angle 90")
+        cad_cmds.append( f"rotate body {{ {ids} }} about y angle 90")
         x0, y0, z0 = self.coefficients['x0'], self.coefficients['y0'], self.coefficients['z0']
         cad_cmds.append(f"body {{ {ids} }} move {x0} {y0} {z0}")
 
