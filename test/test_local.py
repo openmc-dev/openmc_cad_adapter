@@ -93,7 +93,7 @@ def test_y_cone(request, run_in_tmpdir):
 
 @reset_openmc_ids
 def test_z_cone(request, run_in_tmpdir):
-    z_cone = openmc.ZCone(x0=50.0, y0=10.0, z0=2.0, r2=1.0)
+    z_cone = openmc.ZCone(x0=50.0, y0=10.0, z0=2.0, r2=0.25)
     g = openmc.Geometry([openmc.Cell(region=-z_cone)])
     to_cubit_journal(g, world=(500, 500, 500), filename='z_cone.jou')
     diff_gold_file('z_cone.jou')
