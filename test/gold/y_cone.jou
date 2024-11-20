@@ -5,8 +5,12 @@ graphics pause
 set journal off
 set default autosize off
 #CELL 1
-create frustum height 500 radius 31.622776601683793 top 0
+create frustum height 500 radius 707.1067811865476 top 0
 #{ id1 = Id("body") }
+body { id1 } move 0 0 -250.0
+body { id1 } copy reflect z
+#{ id2 = Id("body") }
+unite body { id1 }  { id2 }
 rotate body { id1 } about x angle 90
 body { id1 } move 40.0 20.0 7.0
 body { id1 } name "Cell_1"
