@@ -5,88 +5,76 @@ graphics pause
 set journal off
 set default autosize off
 #CELL 1
-create surface rectangle width  1000 zplane
-#{ id1 = Id("surface") }
+brick x 1000 y 1000 z 1000
+#{ id1 = Id("body") }
+body { id1 } move 0.0 0.0 -500
+Rotate body { id1 } about 0 0 0 direction -0.7071067811865476 0.7071067811865476 0.0 Angle 90.0
+body { id1 } move -2.4999999999999996 -2.4999999999999996 -0.0
+brick x 500 y 500 z 500
 #{ id2 = Id("body") }
-# n3 0.7071067811865475 -0.7071067811865475 0.0
-Rotate body { id2 } about 0 0 0 direction 0.7071067811865475 -0.7071067811865475 0.0 Angle -90.0
-body { id2 } move -3.5355339059327373 -3.5355339059327373 -0.0
-brick x 500 y 500 z 500
+subtract body { id1 } from body { id2 }
+brick x 1000 y 1000 z 1000
 #{ id3 = Id("body") }
-section body { id3 } with surface { id1 } reverse
-del surface { id1 }
-create surface rectangle width  1000 zplane
-#{ id4 = Id("surface") }
+body { id3 } move 0.0 0.0 -500
+Rotate body { id3 } about 0 0 0 direction -0.7071067811865476 0.7071067811865476 0.0 Angle 90.0
+body { id3 } move 2.4999999999999996 2.4999999999999996 0.0
+brick x 500 y 500 z 500
+#{ id4 = Id("body") }
+intersect body { id3 } { id4 }
 #{ id5 = Id("body") }
-# n3 0.7071067811865475 -0.7071067811865475 0.0
-Rotate body { id5 } about 0 0 0 direction 0.7071067811865475 -0.7071067811865475 0.0 Angle -90.0
-body { id5 } move 3.5355339059327373 3.5355339059327373 0.0
-brick x 500 y 500 z 500
+intersect body { id2 } { id4 }
 #{ id6 = Id("body") }
-section body { id6 } with surface { id4 } 
-del surface { id4 }
-#{ id7 = Id("body") }
-intersect body { id3 } { id6 }
+#{id7 = ( id5 == id6 ) ? id4 : id6}
+brick x 1000 y 1000 z 1000
 #{ id8 = Id("body") }
-#{id9 = ( id7 == id8 ) ? id6 : id8}
-create surface rectangle width  1000 zplane
-#{ id10 = Id("surface") }
+body { id8 } move 0.0 0.0 -500
+Rotate body { id8 } about 0 0 0 direction -1.0 0.0 0.0 Angle 45.00000000000001
+body { id8 } move -0.0 -2.4999999999999996 -2.4999999999999996
+brick x 500 y 500 z 500
+#{ id9 = Id("body") }
+subtract body { id8 } from body { id9 }
+#{ id10 = Id("body") }
+intersect body { id7 } { id9 }
 #{ id11 = Id("body") }
-# n3 0.7071067811865475 0.0 0.0
-Rotate body { id11 } about 0 0 0 direction 0.7071067811865475 0.0 0.0 Angle -45.0
-body { id11 } move -0.0 -3.5355339059327373 -3.5355339059327373
-brick x 500 y 500 z 500
-#{ id12 = Id("body") }
-section body { id12 } with surface { id10 } reverse
-del surface { id10 }
+#{id12 = ( id10 == id11 ) ? id9 : id11}
+brick x 1000 y 1000 z 1000
 #{ id13 = Id("body") }
-intersect body { id9 } { id12 }
-#{ id14 = Id("body") }
-#{id15 = ( id13 == id14 ) ? id12 : id14}
-create surface rectangle width  1000 zplane
-#{ id16 = Id("surface") }
-#{ id17 = Id("body") }
-# n3 0.7071067811865475 0.0 0.0
-Rotate body { id17 } about 0 0 0 direction 0.7071067811865475 0.0 0.0 Angle -45.0
-body { id17 } move 0.0 3.5355339059327373 3.5355339059327373
+body { id13 } move 0.0 0.0 -500
+Rotate body { id13 } about 0 0 0 direction -1.0 0.0 0.0 Angle 45.00000000000001
+body { id13 } move 0.0 2.4999999999999996 2.4999999999999996
 brick x 500 y 500 z 500
+#{ id14 = Id("body") }
+intersect body { id13 } { id14 }
+#{ id15 = Id("body") }
+intersect body { id12 } { id14 }
+#{ id16 = Id("body") }
+#{id17 = ( id15 == id16 ) ? id14 : id16}
+brick x 1000 y 1000 z 1000
 #{ id18 = Id("body") }
-section body { id18 } with surface { id16 } 
-del surface { id16 }
+body { id18 } move 0.0 0.0 -500
+Rotate body { id18 } about 0 0 0 direction 0.0 1.0 0.0 Angle 45.00000000000001
+body { id18 } move -2.4999999999999996 -0.0 -2.4999999999999996
+brick x 500 y 500 z 500
 #{ id19 = Id("body") }
-intersect body { id15 } { id18 }
+subtract body { id18 } from body { id19 }
 #{ id20 = Id("body") }
-#{id21 = ( id19 == id20 ) ? id18 : id20}
-create surface rectangle width  1000 zplane
-#{ id22 = Id("surface") }
+intersect body { id17 } { id19 }
+#{ id21 = Id("body") }
+#{id22 = ( id20 == id21 ) ? id19 : id21}
+brick x 1000 y 1000 z 1000
 #{ id23 = Id("body") }
-# n3 0.0 -0.7071067811865475 0.0
-Rotate body { id23 } about 0 0 0 direction 0.0 -0.7071067811865475 0.0 Angle -45.0
-body { id23 } move -3.5355339059327373 -0.0 -3.5355339059327373
+body { id23 } move 0.0 0.0 -500
+Rotate body { id23 } about 0 0 0 direction 0.0 1.0 0.0 Angle 45.00000000000001
+body { id23 } move 2.4999999999999996 0.0 2.4999999999999996
 brick x 500 y 500 z 500
 #{ id24 = Id("body") }
-section body { id24 } with surface { id22 } reverse
-del surface { id22 }
+intersect body { id23 } { id24 }
 #{ id25 = Id("body") }
-intersect body { id21 } { id24 }
+intersect body { id22 } { id24 }
 #{ id26 = Id("body") }
 #{id27 = ( id25 == id26 ) ? id24 : id26}
-create surface rectangle width  1000 zplane
-#{ id28 = Id("surface") }
-#{ id29 = Id("body") }
-# n3 0.0 -0.7071067811865475 0.0
-Rotate body { id29 } about 0 0 0 direction 0.0 -0.7071067811865475 0.0 Angle -45.0
-body { id29 } move 3.5355339059327373 0.0 3.5355339059327373
-brick x 500 y 500 z 500
-#{ id30 = Id("body") }
-section body { id30 } with surface { id28 } 
-del surface { id28 }
-#{ id31 = Id("body") }
-intersect body { id27 } { id30 }
-#{ id32 = Id("body") }
-#{id33 = ( id31 == id32 ) ? id30 : id32}
-body { id33 } name "Cell_1"
-group "mat:void" add body { id33 } 
+body { id27 } name "Cell_1"
+group "mat:void" add body { id27 } 
 graphics flush
 set default autosize on
 zoom reset
