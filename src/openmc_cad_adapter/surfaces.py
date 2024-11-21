@@ -54,38 +54,39 @@ class CADPlane(CADSurface, openmc.Plane):
         cmds = []
 
         n = np.array([self.coefficients[k] for k in ('a', 'b', 'c')])
-        cd = self.coefficients['d']
-        maxv = sys.float_info.min
-        for i, v in enumerate(n):
-            if abs(v) > maxv:
-                maxv = v
+        distance = self.coefficients['d'] / np.linalg.norm(n)
 
-        ns = cd * n
-
-        cmds.append( f"create surface rectangle width  { 2*extents[0] } zplane")
-        sur = emit_get_last_id("surface", cmds)
-        surf = emit_get_last_id("body", cmds)
-
-        n = n/np.linalg.norm(n)
-        ns = cd * n
-        zn = np.array([ 0, 0, 1 ])
-        n3 = np.cross(n, zn)
-        dot = np.dot(n, zn)
-        cmds.append(f"# n3 {n3[0]} {n3[1]} {n3[2]}")
-        degs = math.degrees(math.acos(np.dot(n, zn)))
-        y = np.linalg.norm(n3)
-        x = dot
-        angle = - math.degrees(math.atan2( y, x ))
-        if n3[0] != 0 or n3[1] != 0 or n3[2] != 0:
-            cmds.append(f"Rotate body {{ {surf} }} about 0 0 0 direction {n3[0]} {n3[1]} {n3[2]} Angle {angle}")
-        cmds.append(f"body {{ { surf } }} move {ns[0]} {ns[1]} {ns[2]}")
-        cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+        # Create cutter block larger than the world and rotate/translate it so
+        # the +z plane of the block is coincident with this general plane
+        max_extent = np.max(extents)
+        cmds.append(f"brick x {2*max_extent} y {2*max_extent} z {2*max_extent}" )
         ids = emit_get_last_id( ent_type, cmds)
-        cmds.append(f"section body {{ {ids} }} with surface {{ {sur} }} {self.lreverse(node)}")
-        cmds.append(f"del surface {{ {sur} }}")
+        cmds.append(f"body {{ { ids } }} move 0.0 0.0 {-max_extent}")
 
-        cmds += self.boundary_condition(ids)
-        return ids, cmds
+        nhat = n / np.linalg.norm(n)
+        rhat = np.array([0.0, 0.0, 1.0])
+        angle = math.degrees(math.acos(np.dot(nhat, rhat)))
+
+        if not math.isclose(angle, 0.0, abs_tol=1e-6):
+            rot_axis = np.cross(rhat, nhat)
+            rot_axis /= np.linalg.norm(rot_axis)
+            axis = f"{rot_axis[0]} {rot_axis[1]} {rot_axis[2]}"
+            cmds.append(f"Rotate body {{ {ids} }} about 0 0 0 direction {axis} Angle {angle}")
+
+        tvec = distance*nhat
+        cmds.append(f"body {{ { ids } }} move {tvec[0]} {tvec[1]} {tvec[2]}")
+
+        cmds.append(f"brick x {extents[0]} y {extents[1]} z {extents[2]}" )
+        wid = emit_get_last_id( ent_type, cmds)
+        # if positive half space we subtract the cutter block from the world
+        if node.side != '-':
+            cmds.append(f"subtract body {{ { ids } }} from body {{ { wid } }}")
+        # if negative half space we intersect the cutter block with the world
+        else:
+            cmds.append(f"intersect body {{ { ids } }} {{ { wid } }}")
+
+        #cmds += self.boundary_condition(ids)
+        return wid, cmds
 
     @classmethod
     def from_openmc_surface_inner(cls, plane):
