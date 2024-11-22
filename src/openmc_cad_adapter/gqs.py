@@ -44,10 +44,10 @@ def characterize_general_quadratic( surface ): #s surface
     else:
         delta = -1 if det_Ac < 0 else 1
 
-    eigen_results = np.linalg.eig(Aa)
-    signs = np.array([ 0, 0, 0 ])
-    for i in range( 0, 3 ):
-        if eigen_results.eigenvalues[ i ] > -1 * gq_tol:
+    eigenvalues, eigenvectors = np.linalg.eig(Aa)
+    signs = np.array([0, 0, 0])
+    for i in range(0, 3):
+        if eigenvalues[i] > -1 * gq_tol:
             signs[i] = 1
         else:
             signs[i] = -1
@@ -58,7 +58,7 @@ def characterize_general_quadratic( surface ): #s surface
 
     Aai = np.linalg.pinv( Aa )
 
-    C = Aai * B
+    C = np.dot(Aai, B)
 
     dx = C[0]
     dy = C[1]
@@ -69,7 +69,7 @@ def characterize_general_quadratic( surface ): #s surface
     K_ = K_[0]
 
     if rank_Aa == 2 and rank_Ac == 3 and S == 1:
-        delta = -1 if K_ * signs[0] else 1
+        delta = -1 if K_ * signs[0] < 0 else 1
 
     D = -1 if K_ * signs[0] else 1
 
@@ -113,8 +113,7 @@ def characterize_general_quadratic( surface ): #s surface
     #set the translation
     translation = C
 
-    rotation_matrix = eigen_results.eigenvectors
-    eigenvalues = eigen_results.eigenvalues
+    rotation_matrix = eigenvectors
 
     for i in range( 0, 3 ):
         if abs(eigenvalues[i]) < gq_tol:
