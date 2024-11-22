@@ -85,7 +85,6 @@ class CADPlane(CADSurface, openmc.Plane):
         else:
             cmds.append(f"intersect body {{ { ids } }} {{ { wid } }}")
 
-        #cmds += self.boundary_condition(ids)
         return wid, cmds
 
     @classmethod
