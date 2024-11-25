@@ -42,15 +42,15 @@ def characterize_general_quadratic( surface ): #s surface
     if np.abs( det_Ac ) < gq_tol:
         delta = 0
     else:
-        delta = -1 if det_Ac < 0 else 1
+        delta = np.sign(det_Ac)
 
     eigenvalues, eigenvectors = np.linalg.eig(Aa)
     signs = np.array([0, 0, 0])
     for i in range(0, 3):
         if eigenvalues[i] > -1 * gq_tol:
-            signs[i] = 1
-        else:
             signs[i] = -1
+        else:
+            signs[i] = 1
 
     S = 1 if np.abs( signs.sum() ) == 3 else -1
 
