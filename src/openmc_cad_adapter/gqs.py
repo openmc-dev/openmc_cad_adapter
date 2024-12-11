@@ -13,19 +13,81 @@ HYPERBOLIC_CYLINDER = 8
 PARABOLIC_CYLINDER = 9
 
 
+def _make_right_handed(A):
+    # Get the size of the matrix
+    n = A.shape[0]
+
+    # List to track used rows for the diagonal
+    used_rows = set()
+
+    # List to store the new column order
+    column_order = []
+
+    # Tolerance for ambiguity
+    tolerance = 1e-8
+
+    # Determine the best column for each diagonal position
+    for i in range(n):  # For each diagonal position
+        max_value = -np.inf
+        best_col = -1
+        ambiguous_cols = []
+
+        for j in range(n):  # Check each column
+            if j not in column_order:  # Only consider unused columns
+                value = abs(A[i, j])
+                if value > max_value + tolerance:
+                    max_value = value
+                    best_col = j
+                    ambiguous_cols = []  # Clear ambiguities
+                elif abs(value - max_value) < tolerance:  # Handle ambiguity
+                    ambiguous_cols.append(j)
+
+        if best_col != -1:
+            column_order.append(best_col)
+            used_rows.add(i)
+        elif ambiguous_cols:  # Handle ambiguous columns
+            ambiguous_cols.append(best_col)
+            # Check for orthogonality with already selected columns
+            for col1, col2 in zip(ambiguous_cols, ambiguous_cols[1:]):
+                v1 = A[:, col1]
+                v2 = A[:, col2]
+                if abs(np.dot(v1, v2)) < tolerance:  # Prefer orthogonal vectors
+                    best_col = col1 if col1 not in column_order else col2
+                    column_order.append(best_col)
+                    break
+
+    # Reorder the columns of the matrix
+    A_reordered = A[:, column_order]
+
+    # Ensure right-handedness of the resulting matrix
+    v1 = A_reordered[:, 0]
+    v2 = A_reordered[:, 1]
+    v3 = A_reordered[:, 2]
+
+    cross_product = np.cross(v1, v2)
+    if np.dot(cross_product, v3) < 0:  # Check for left-handedness
+        # Swap two columns to fix handedness (e.g., swap the last two columns)
+        A_reordered[:, [1, 2]] = A_reordered[:, [2, 1]]
+        column_order[1], column_order[2] = column_order[2], column_order[1]
+
+    return A_reordered, column_order
+
+
 def characterize_general_quadratic( surface ): #s surface
     gq_tol = 1e-6
     equivalence_tol = 1e-8
-    a = surface.coefficients['a']
-    b = surface.coefficients['b']
-    c = surface.coefficients['c']
-    d = surface.coefficients['d']
-    e = surface.coefficients['e']
-    f = surface.coefficients['f']
-    g = surface.coefficients['g']
-    h = surface.coefficients['h']
-    j = surface.coefficients['j']
-    k = surface.coefficients['k']
+
+    a = np.round(surface.coefficients['a'], 8)
+    b = np.round(surface.coefficients['b'], 8)
+    c = np.round(surface.coefficients['c'], 8)
+    d = np.round(surface.coefficients['d'], 8)
+    e = np.round(surface.coefficients['e'], 8)
+    f = np.round(surface.coefficients['f'], 8)
+    g = np.round(surface.coefficients['g'], 8)
+    h = np.round(surface.coefficients['h'], 8)
+    j = np.round(surface.coefficients['j'], 8)
+    k = np.round(surface.coefficients['k'], 8)
+
     #coefficient matrix
     Aa = np.asarray([[a, d/2, f/2],
                      [d/2, b, e/2],
@@ -45,6 +107,10 @@ def characterize_general_quadratic( surface ): #s surface
         delta = -1 if det_Ac < 0 else 1
 
     eigenvalues, eigenvectors = np.linalg.eig(Aa)
+
+    eigenvectors, order = _make_right_handed(eigenvectors)
+    eigenvalues = eigenvalues[order] # Reorder eigenvalues
+
     signs = np.array([0, 0, 0])
     for i in range(0, 3):
         if eigenvalues[i] > -1 * gq_tol:

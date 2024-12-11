@@ -134,26 +134,26 @@ def to_cubit_journal(geometry : openmc.Geometry, world : Iterable[Real] = None,
 
                         if abs(theta) <= np.finfo(np.float64).eps:
                             return ( np.array([ 0, 0, 0 ]), 0 )
-                        elif abs( theta - math.pi ) <= np.finfo(np.float64).eps:
-                          # theta is pi (180 degrees) or extremely close to it
-                          # find the column of mat with the largest diagonal
-                          col = 0
-                          if mat[1,1] > mat[col,col]: col = 1
-                          if mat[2,2] > mat[col,col]: col = 2
+                        if abs( theta - math.pi ) <= np.finfo(np.float64).eps:
+                            # theta is pi (180 degrees) or extremely close to it
+                            # find the column of mat with the largest diagonal
+                            col = 0
+                            if mat[1,1] > mat[col,col]: col = 1
+                            if mat[2,2] > mat[col,col]: col = 2
 
-                          axis = np.array([ 0, 0, 0 ])
+                            axis = np.array([ 0, 0, 0 ])
 
-                          axis[col] = math.sqrt( (mat[col,col]+1)/2 )
-                          denom = 2*axis[col]
-                          axis[(col+1)%3] = mat[col,(col+1)%3] / denom
-                          axis[(col+2)%3] = mat[col,(col+2)%3] / denom
-                          return ( axis, theta )
+                            axis[col] = math.sqrt( (mat[col,col]+1)/2 )
+                            denom = 2*axis[col]
+                            axis[(col+1)%3] = mat[col,(col+1)%3] / denom
+                            axis[(col+2)%3] = mat[col,(col+2)%3] / denom
+                            return ( axis, theta )
                         else:
-                          axis = np.array([ x/r, y/r, z/r ])
-                          return ( axis, theta )
+                            axis = np.array([ x/r, y/r, z/r ])
+                        return ( axis, theta )
                     (r_axis, r_theta ) = rotation_to_axis_angle( rotation_matrix )
                     #compensate for cubits insertion of a negative
-                    r_degs = - math.degrees( r_theta )
+                    r_degs = math.degrees( r_theta )
                     print( r_axis, math.degrees( r_theta ), r_degs )
                     if gq_type == ELLIPSOID : #1
                             r1 = math.sqrt( abs( -K_/A_ ) )
