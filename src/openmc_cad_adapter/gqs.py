@@ -13,7 +13,7 @@ HYPERBOLIC_CYLINDER = 8
 PARABOLIC_CYLINDER = 9
 
 
-def _reorder_columns_for_orthogonality(A):
+def _make_right_handed(A):
     # Get the size of the matrix
     n = A.shape[0]
 
@@ -59,6 +59,17 @@ def _reorder_columns_for_orthogonality(A):
     # Reorder the columns of the matrix
     A_reordered = A[:, column_order]
 
+    # Ensure right-handedness of the resulting matrix
+    v1 = A_reordered[:, 0]
+    v2 = A_reordered[:, 1]
+    v3 = A_reordered[:, 2]
+
+    cross_product = np.cross(v1, v2)
+    if np.dot(cross_product, v3) < 0:  # Check for left-handedness
+        # Swap two columns to fix handedness (e.g., swap the last two columns)
+        A_reordered[:, [1, 2]] = A_reordered[:, [2, 1]]
+        column_order[1], column_order[2] = column_order[2], column_order[1]
+
     return A_reordered, column_order
 
 
@@ -97,7 +108,7 @@ def characterize_general_quadratic( surface ): #s surface
 
     eigenvalues, eigenvectors = np.linalg.eig(Aa)
 
-    eigenvectors, order = _reorder_columns_for_orthogonality(eigenvectors)
+    eigenvectors, order = _make_right_handed(eigenvectors)
     eigenvalues = eigenvalues[order] # Reorder eigenvalues
 
     signs = np.array([0, 0, 0])
